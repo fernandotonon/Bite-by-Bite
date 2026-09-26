@@ -1,0 +1,21 @@
+# Sibling types of the app directory. Needed for the Theme singleton (the dojo imports the sandbox
+# directory without a module) and when the files are served to the Clayground Web Runtime.
+singleton Theme 1.0 Theme.qml
+AudioManager 1.0 AudioManager.qml
+BiteGame 1.0 BiteGame.qml
+BriefingScreen 1.0 BriefingScreen.qml
+CharacterCard 1.0 CharacterCard.qml
+CharacterVisual 1.0 CharacterVisual.qml
+DeckScreen 1.0 DeckScreen.qml
+Hud 1.0 Hud.qml
+InputManager 1.0 InputManager.qml
+Level3D 1.0 Level3D.qml
+MenuList 1.0 MenuList.qml
+MissionScreen 1.0 MissionScreen.qml
+Panel 1.0 Panel.qml
+PauseScreen 1.0 PauseScreen.qml
+PropVisual 1.0 PropVisual.qml
+ResultsScreen 1.0 ResultsScreen.qml
+SaveSystem 1.0 SaveSystem.qml
+SquadScreen 1.0 SquadScreen.qml
+TitleScreen 1.0 TitleScreen.qml
