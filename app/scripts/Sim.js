@@ -271,7 +271,18 @@ function createSim(defs) {
             if (zb.moving && !leader.sneaking) { var nr = zb.running ? ch.noise.run : ch.noise.walk; if (ch.traits && ch.traits.quiet) nr *= 0.5; if (nr > 0 && S.time - zb.lastNoise > 0.6) { addNoise(zb.x, zb.z, nr * T.hearRange, "steps", zb.id); zb.lastNoise = S.time } }
         }
     }
-    function unhide(zb) { if (!zb.hidden) return; var p = propById(zb.hidden); if (p) p.occupant = null; zb.hidden = null; emit("unhide", { zombie: zb.id }) }
+    function unhide(zb) {   // step back out to where the zombie stood before hiding: the hiding spot itself blocks movement
+        if (!zb.hidden) return
+        var p = propById(zb.hidden); if (p) p.occupant = null
+        zb.hidden = null
+        if (zb.hideReturn && freeAt(zb.hideReturn.x, zb.hideReturn.z, T.zombieRadius)) { zb.x = zb.hideReturn.x; zb.z = zb.hideReturn.z }
+        else if (p) {   // spot taken meanwhile: try the four sides of the prop
+            var cands = [[p.x + p.w / 2, p.z + p.d + 0.5], [p.x + p.w / 2, p.z - 0.5], [p.x + p.w + 0.5, p.z + p.d / 2], [p.x - 0.5, p.z + p.d / 2]]
+            for (var i = 0; i < cands.length; i++) if (freeAt(cands[i][0], cands[i][1], T.zombieRadius)) { zb.x = cands[i][0]; zb.z = cands[i][1]; break }
+        }
+        zb.hideReturn = null
+        emit("unhide", { zombie: zb.id })
+    }
     function propById(id) { for (var i = 0; i < S.props.length; i++) if (S.props[i].id === id) return S.props[i]; return null }
     function laserById(id) { for (var i = 0; i < S.lasers.length; i++) if (S.lasers[i].id === id) return S.lasers[i]; return null }
     function cameraById(id) { for (var i = 0; i < S.cameras.length; i++) if (S.cameras[i].id === id) return S.cameras[i]; return null }
@@ -330,7 +341,7 @@ function createSim(defs) {
             S.message = { text: t.label + " is locked (needs Master key)", until: S.time + 2 }; emit("locked", { x: t.x, z: t.z }); return false
         case "pickup": t.heldBy = zb.id; emit("pickup", { x: t.x, z: t.z, item: t.id }); return true
         case "throw": throwPickup(zb, t); return true
-        case "hide": zb.hidden = t.id; t.occupant = zb.id; zb.x = t.x + t.w / 2; zb.z = t.z + t.d / 2; emit("hide", { x: zb.x, z: zb.z }); return true
+        case "hide": zb.hidden = t.id; t.occupant = zb.id; zb.hideReturn = { x: zb.x, z: zb.z }; zb.x = t.x + t.w / 2; zb.z = t.z + t.d / 2; emit("hide", { x: zb.x, z: zb.z }); return true
         case "sabotage":
             t.usedUntil = S.time + T.sabotageDuration; t.noticeAt = S.time + T.sabotageNoticeDelay; t.noticed = false; t.mode = "sabotage"
             setLinks(t, S.time + T.sabotageDuration); emit("sabotage", { x: t.x, z: t.z, duration: T.sabotageDuration }); return true

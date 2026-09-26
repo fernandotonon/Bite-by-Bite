@@ -97,6 +97,10 @@ test("detection: sneaking fills slower, hiding in the locker makes the zombie in
     run(sim, 2)
     assert.equal(g.meter, 0, "hidden zombie is not seen")
     sim.interact(); assert.ok(!sim.activeZombie().hidden)
+    const out = sim.activeZombie(), before = { x: out.x, z: out.z }
+    assert.ok(sim.freeAt(out.x, out.z, Tu.zombieRadius), "standing on free floor after leaving the locker")
+    sim.setInput({ x: 1, z: 0 }); run(sim, 0.5)
+    assert.ok(out.x > before.x + 0.5, "can walk away after leaving the locker")
 })
 
 test("noise: throwing the radio makes the ward guard investigate the landing spot", () => {
