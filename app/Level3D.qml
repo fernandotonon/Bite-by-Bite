@@ -158,10 +158,13 @@ Item {
                 x: (vertical ? d.x + d.w / 2 : d.x) * 100; z: (vertical ? d.z : d.z + d.d / 2) * 100
                 eulerRotation.y: open ? (vertical ? 80 : -80) : 0
                 Behavior on eulerRotation.y { NumberAnimation { duration: 350; easing.type: Easing.OutCubic } }
-                Box3D {
-                    x: vertical ? 0 : d.w * 50; z: vertical ? d.d * 50 : 0; y: 0
-                    width: vertical ? 14 : d.w * 100; height: level.wallH * 100; depth: vertical ? d.d * 100 : 14
-                    color: d.lockType ? "#3a8f8a" : "#d9a066"; useToonShading: true; showEdges: true; edgeColor: "#2a2f3a"; castsShadows: true
+                PropVisual {   // the leaf: a hospital door, or the teal service door for locked maintenance passages
+                    x: vertical ? 0 : d.w * 50; z: vertical ? d.d * 50 : 0
+                    eulerRotation.y: vertical ? 90 : 0
+                    assetId: d.lockType ? "maintenance_door" : "hospital_door"
+                    height: level.wallH * 1.12
+                    useModels: level.useModels
+                    placeholderWidth: d.d > d.w ? d.d : d.w
                 }
                 Box3D { visible: d.lockType && d.locked; x: vertical ? 0 : d.w * 50; z: vertical ? d.d * 50 : 0; y: level.wallH * 100 - 30; width: vertical ? 18 : 26; height: 26; depth: vertical ? 26 : 18; color: "#f2c02f"; lighting: 0; showEdges: false; castsShadows: false }
             }

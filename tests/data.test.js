@@ -33,9 +33,10 @@ test("mission: hospital has every required level element", () => {
     assert.ok(m.props.filter(p => p.hide).length >= 1, "hiding location")
     assert.ok(m.zones.find(z => z.kind === "checkpoint") && m.zones.find(z => z.kind === "exit"), "checkpoint + exit")
     assert.equal(m.collectibles.length, 1)
-    assert.equal(m.objectives.optional.length, 4)
+    assert.equal(m.objectives.optional.length, 5)
     for (const p of m.props) assert.ok(As.get(p.asset), "prop asset " + p.asset)
     for (const h of m.humans) assert.ok(As.get(h.asset), "human asset " + h.asset)
+    for (const c of Ch.characters) { assert.ok(As.get(c.asset), "zombie asset " + c.asset); if (c.humanAsset) assert.ok(As.get(c.humanAsset), "human asset " + c.humanAsset) }
     for (const pn of m.panels) for (const l of pn.links) assert.ok(m.lasers.find(x => x.id === l) || m.cameras.find(x => x.id === l), "panel link " + l)
 })
 

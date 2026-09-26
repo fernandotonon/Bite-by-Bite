@@ -316,8 +316,8 @@ function createSim(defs) {
         var hp = nearest(S.props, zb.x, zb.z, R, function (p) { return p.hide && !p.occupant })
         if (hp) out.push({ kind: "hide", text: "Hide in " + hp.label, target: hp })
         var pn = nearest(S.panels, zb.x, zb.z, R + 0.3, function (p) { return S.time >= p.usedUntil })
-        if (pn) out.push(ch.ability && ch.ability.id === "sabotage" ? { kind: "sabotage", text: "Sabotage " + pn.label, target: pn, needs: "sabotage" }
-                                                                  : { kind: "smash", text: "Smash " + pn.label + " (alarm!)", target: pn })
+        if (pn && ch.ability && ch.ability.id === "sabotage") out.push({ kind: "sabotage", text: "Sabotage " + pn.label, target: pn, needs: "sabotage" })
+        else if (pn && !(ch.traits && ch.traits.noSmash)) out.push({ kind: "smash", text: "Smash " + pn.label + " (alarm!)", target: pn })
         var ww = nearest(S.walls, zb.x, zb.z, R + 0.2, function (w) { return w.weak && !w.broken })
         if (ww) out.push({ kind: "break", text: (ch.traits && ch.traits.heavyHands ? "Break weak wall" : "Weak wall (needs Brute)"), target: ww, needs: "smash" })
         var hu = nearest(S.humans, zb.x, zb.z, T.biteRange + 0.3, function (h) { return h.vulnerable && !h.bitten })
@@ -469,6 +469,7 @@ function createSim(defs) {
         var rate = d <= near ? T.detectFillNear : T.detectFillNear + (T.detectFillFar - T.detectFillNear) * (d - near) / (range - near)
         if (zb.sneaking) rate *= T.sneakFactor
         if (ch.traits && ch.traits.maintenance && h && d > T.maintenanceNear && zoneAt(zb.x, zb.z, "maintenance")) rate *= T.maintenanceFactor
+        if (ch.traits && ch.traits.disguise && h && d > T.maintenanceNear) rate *= T.maintenanceFactor     // looks like staff from afar, anywhere
         if (ch.traits && ch.traits.noisy && zb.moving) rate *= 1.3
         return rate
     }
@@ -677,7 +678,7 @@ function createSim(defs) {
         var done = 0
         for (var k = 0; k < M.objectives.optional.length; k++) { var o = M.objectives.optional[k]; var d = !!S.objectives[o.id].done; if (d) done++; out.optional.push({ id: o.id, label: o.label, done: d }) }
         out.stars = done
-        out.rating = ["C", "B", "A", "S", "S+"][done] || "C"
+        out.rating = ["C", "B", "A", "S", "S", "S+"][done] || "C"
         return out
     }
 

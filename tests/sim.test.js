@@ -159,6 +159,22 @@ test("panel: a standard zombie smashes it (short outage + alarm + zap); the elec
     assert.equal(guard(b, "guard_hall").state, "investigate")
 })
 
+test("nurse: cannot smash the panel, is noticed slower from afar, and is recruitable", () => {
+    const n = make(["nurse"], { blind: true })
+    const zb = n.activeZombie(); zb.x = 26.6; zb.z = 16.0
+    assert.equal(n.prompt(), null, "no smash offered to the nurse")
+    assert.ok(!n.ability())
+    const a = make(["standard"]), b = make(["nurse"])
+    for (const sim of [a, b]) { sim.state.doors[0].open = true; const z = sim.activeZombie(); z.x = 9.5; z.z = 8.5; const g = guard(sim, "guard_ward"); g.x = 9.5; g.z = 2.5; g.facing = 0; g.waitLeft = 100 }
+    run(a, 0.5); run(b, 0.5)
+    assert.ok(guard(b, "guard_ward").meter < guard(a, "guard_ward").meter * 0.6, "disguise fills slower at 6 m")
+    const c = make(["standard"], { blind: true })
+    const nurse = c.state.humans.find(h => h.id === "nurse"); const z2 = c.activeZombie(); z2.x = nurse.x; z2.z = nurse.z + 0.8; z2.facing = 0
+    assert.ok(c.bite()); run(c, 2)
+    assert.ok(c.state.squad.find(q => q.charId === "nurse"), "nurse joined the squad")
+    assert.ok(c.state.objectives.nurse.done)
+})
+
 test("routes: the service door needs the janitor, the weak wall needs the brute", () => {
     const s = make(["standard"], { blind: true })
     let zb = s.activeZombie(); zb.x = 19.2; zb.z = 1.8
@@ -210,7 +226,7 @@ test("full flow: escape room -> checkpoint -> bite the electrician -> switch -> 
     const r = sim.results()
     assert.ok(r.won && r.optional.find(o => o.id === "capture").done && r.optional.find(o => o.id === "brain").done && r.optional.find(o => o.id === "stealth").done)
     assert.ok(r.time < 240, "fast enough: " + r.time)
-    assert.equal(r.stars, 4); assert.equal(r.rating, "S+")
+    assert.equal(r.stars, 4); assert.equal(r.rating, "S")     // 4 of 5 optionals (the nurse was not recruited)
 })
 
 test("checkpoint: getting caught after the checkpoint reloads there, keeping the elapsed clock", () => {

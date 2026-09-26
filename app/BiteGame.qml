@@ -30,6 +30,7 @@ FocusScope {
     readonly property real uiScale: Math.min(1, height / 720, width / 1100)
     readonly property bool touchShown: touch.shown
     readonly property var hudPrompt: hud.prompt
+    function hudSquadTap(x, y) { return hud.squadTap(x, y) }      // touch on the squad strip (UI-layer coordinates)
     property alias save: save
     property alias audio: audio
 
@@ -160,6 +161,11 @@ FocusScope {
         if (screen === "playing") {
             switch (a) {
             case "interact": sim.interact(); refresh(); break
+            case "context": {   // the touch button: whatever the prompt offers (bite / ability / interact)
+                var pr = sim.prompt()
+                if (pr && pr.kind === "bite") sim.bite(); else if (pr && pr.needs) sim.ability(); else sim.interact()
+                refresh(); break
+            }
             case "bite": sim.bite(); refresh(); break
             case "ability": sim.ability(); refresh(); break
             case "switchNext": sim.switchZombie(1); refresh(); break

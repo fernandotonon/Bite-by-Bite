@@ -57,7 +57,7 @@ Item {
             for (i = 0; i < result.collected.length; i++) if (rec.collectibles.indexOf(result.collected[i]) < 0) rec.collectibles.push(result.collected[i])
             // the rating is the best set of optionals ever achieved on this mission
             rec.stars = Math.max(rec.stars, result.stars)
-            rec.rating = ["C", "B", "A", "S", "S+"][Math.max(rec.stars, result.stars)] || "C"
+            rec.rating = ["C", "B", "A", "S", "S", "S+"][Math.max(rec.stars, result.stars)] || "C"
             for (i = 0; i < result.recruited.length; i++) if (p.unlocked.indexOf(result.recruited[i]) < 0) { p.unlocked.push(result.recruited[i]); out.newCharacters.push(result.recruited[i]) }
         }
         p.missions[missionId] = rec

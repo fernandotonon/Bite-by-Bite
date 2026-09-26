@@ -44,7 +44,7 @@ var hospital = {
         squadLimit: 2,
         suggested: ["Bite (recruit the electrician)", "Sabotage (disable the laser)", "Master key (service door shortcut)"],
         capture: "electrician",
-        challenges: ["Capture the Electrician", "Avoid full detection", "Find the hidden brain", "Escape within 4:00"]
+        challenges: ["Capture the Electrician", "Recruit the Nurse", "Avoid full detection", "Find the hidden brain", "Escape within 4:00"]
     },
     targetTime: 240,
     squadLimit: 2,
@@ -92,8 +92,13 @@ var hospital = {
         { id: "divider_g", asset: "curtain_divider", x: 16.8, z: 16.8, facing: 90, w: 0.4, d: 2.6, blocksSight: true },
         { id: "locker_g", asset: "locker", x: 11.4, z: 18.9, facing: 90, w: 0.6, d: 0.9, blocksSight: true, hide: true, label: "Locker" },
         { id: "bed_g", asset: "hospital_bed_modern", x: 11.4, z: 15.0, facing: 90, w: 2.2, d: 1.1, blocksSight: false },
-        // ambulance bay - no ambulance asset yet: PLACEHOLDER box drawn by Level3D
-        { id: "ambulance", asset: "ambulance", x: 23.5, z: 1.0, facing: 90, w: 4.5, d: 2.2, blocksSight: true, placeholder: true }
+        // ambulance bay
+        { id: "ambulance", asset: "ambulance", x: 23.5, z: 0.6, facing: 90, w: 4.5, d: 2.2, blocksSight: true },
+        // extra furniture: cover in the corridors, decoration in the rooms
+        { id: "vending", asset: "vending_machine", x: 26.6, z: 8.4, facing: 0, w: 1.0, d: 0.8, blocksSight: true },
+        { id: "wheelchair", asset: "wheelchair", x: 8.6, z: 12.4, facing: 90, w: 0.9, d: 0.9, blocksSight: false, movable: true, label: "Wheelchair" },
+        { id: "iv_a", asset: "iv_stand", x: 3.4, z: 1.3, facing: 0, w: 0.4, d: 0.4, blocksSight: false },
+        { id: "iv_c", asset: "iv_stand", x: 18.9, z: 3.2, facing: 0, w: 0.4, d: 0.4, blocksSight: false }
     ],
     pickups: [ { id: "radio", kind: "radio", x: 13.0, z: 6.6, label: "Radio" } ],
     collectibles: [ { id: "brain", asset: "brain_jar", x: 18.6, z: 18.8, label: "Brain in a jar" } ],
@@ -112,7 +117,7 @@ var hospital = {
         { id: "electrician", kind: "civilian", asset: "electrician_human", x: 23.0, z: 14.5, facing: 180,
           vulnerable: true, recruit: "electrician", label: "Electrician",
           wander: [ { x: 22.5, z: 14.0, wait: 3.0 }, { x: 26.4, z: 18.3, wait: 2.5 }, { x: 23.0, z: 18.6, wait: 3.5 }, { x: 26.8, z: 13.6, wait: 2.0 } ] },
-        { id: "nurse", kind: "civilian", asset: "nurse", x: 14.0, z: 1.5, facing: 0, vulnerable: true, witness: true,
+        { id: "nurse", kind: "civilian", asset: "nurse", x: 14.0, z: 1.5, facing: 0, vulnerable: true, witness: true, recruit: "nurse",
           view: { angle: 50, range: 4.0 }, label: "Nurse" }
     ],
     cameras: [ { id: "cam_hall", x: 23.6, z: 8.25, facing: -15, sweep: 42, period: 9.0, mountHeight: 2.3 } ],
@@ -122,6 +127,7 @@ var hospital = {
         main: { id: "escape", kind: "escape", label: "Escape through the ambulance bay" },
         optional: [
             { id: "capture", kind: "capture", target: "electrician", label: "Capture the Electrician" },
+            { id: "nurse", kind: "capture", target: "nurse", label: "Recruit the Nurse" },
             { id: "stealth", kind: "noAlert", label: "Avoid full detection" },
             { id: "brain", kind: "collectible", target: "brain", label: "Find the hidden brain" },
             { id: "fast", kind: "time", seconds: 240, label: "Escape within 4:00" }

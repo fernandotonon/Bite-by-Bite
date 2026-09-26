@@ -21,8 +21,17 @@ Item {
 
     function fmtTime(s) { s = Math.max(0, Math.floor(s)); return Math.floor(s / 60) + ":" + (s % 60 < 10 ? "0" : "") + (s % 60) }
 
-    // ---- squad strip ----
+    // ---- squad strip (tap a zombie to control it, the pill toggles stay / follow) ----
+    function squadTap(x, y) {
+        for (var i = 0; i < squadRow.children.length; i++) {
+            var c = squadRow.children[i]; if (!c.width || c.tapAction === undefined) continue
+            var p = c.mapFromItem(hud, x, y)
+            if (p.x >= 0 && p.y >= 0 && p.x <= c.width && p.y <= c.height) { c.tapAction(); return true }
+        }
+        return false
+    }
     Row {
+        id: squadRow
         x: 16; y: 14; spacing: 10
         Repeater {
             model: hud.st ? hud.st.squad.length : 0
@@ -33,6 +42,8 @@ Item {
                 readonly property bool active: { hud.stateVersion; return index === hud.st.active }
                 readonly property string status: { hud.stateVersion; return zb.hidden ? "Hidden" : (zb.mode === "follow" ? "Following" : "Staying") }
                 width: hud.compact ? 150 : 190; height: hud.compact ? 46 : 56; radius: 10
+                function tapAction() { if (!active) { hud.sim.selectZombie(index); hud.game.refresh(); hud.game.audio.play("switch") } }
+                MouseArea { anchors.fill: parent; onClicked: parent.tapAction() }
                 color: active ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.25) : Qt.rgba(0, 0, 0, 0.45)
                 border.color: active ? Theme.accent : Theme.border; border.width: 2
                 Rectangle { x: 8; anchors.verticalCenter: parent.verticalCenter; width: 32; height: 32; radius: 16; color: ch ? ch.color : "#888"; border.color: "#111"; border.width: 2
@@ -44,7 +55,16 @@ Item {
                 }
             }
         }
-        Text { visible: hud.st && hud.st.squad.length > 1 && !hud.touch; anchors.verticalCenter: parent.verticalCenter; text: "[Tab] switch  [H] stay/follow"; color: Theme.muted; font.pixelSize: 12; font.family: Theme.font }
+        Rectangle {   // stay / follow pill
+            visible: hud.st && hud.st.squad.length > 1
+            readonly property string mode: { hud.stateVersion; if (!hud.st) return "follow"; for (var i = 0; i < hud.st.squad.length; i++) if (i !== hud.st.active) return hud.st.squad[i].mode; return "follow" }
+            function tapAction() { hud.sim.toggleCommand(); hud.game.refresh() }
+            anchors.verticalCenter: parent.verticalCenter
+            width: pillText.implicitWidth + 28; height: hud.compact ? 40 : 46; radius: 10
+            color: Qt.rgba(0, 0, 0, 0.45); border.color: Theme.border; border.width: 2
+            Text { id: pillText; anchors.centerIn: parent; text: (mode === "follow" ? "\u25B6 Following" : "\u25A0 Staying") + (hud.touch ? "" : "  [H]") + (hud.touch ? "" : "   Tab: switch"); color: Theme.text; font.pixelSize: 13; font.family: Theme.font }
+            MouseArea { anchors.fill: parent; onClicked: parent.tapAction() }
+        }
     }
 
     // ---- objective + clock ----
@@ -119,7 +139,7 @@ Item {
 
     // ---- contextual prompt ----
     Rectangle {
-        visible: hud.prompt !== null
+        visible: hud.prompt !== null && !hud.touch          // on touch the action button carries the label
         anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.bottom; anchors.bottomMargin: hud.compact ? 44 : 64
         width: promptText.width + 40; height: 40; radius: 20
         color: Qt.rgba(0, 0, 0, 0.6); border.color: hud.prompt && hud.prompt.needs && hud.prompt.kind !== "unlock" && hud.prompt.kind !== "sabotage" && hud.prompt.kind !== "break" ? Theme.muted : Theme.accent; border.width: 2
