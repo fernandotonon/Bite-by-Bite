@@ -1,0 +1,178 @@
+<!doctype html>
+<!-- Bite by Bite - page template for the web build (filled in by scripts/make-web-index.py).
+     Loads the Qt wasm behind a loading screen: download progress over all game files, rotating tips, the small
+     files arrive in one pack. Adapted from the Operação TI / School Adventure web pages (same author, MIT). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
+<meta name="theme-color" content="#141a22">
+<title>Bite by Bite</title>
+<script src="bite-sw.js"></script>
+<style>
+  html, body { padding: 0; margin: 0; overflow: hidden; height: 100%; background: #141a22;
+               touch-action: none; overscroll-behavior: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+               font-family: "Helvetica Neue", "Segoe UI", Arial, sans-serif; }
+  #screen { width: 100%; height: 100%; }
+  #bite-loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+                  background: linear-gradient(#141a22, #1f2733); color: #eef2f5; transition: opacity .45s ease; z-index: 10; }
+  #bite-loading.hidden { opacity: 0; pointer-events: none; }
+  #bite-loading .bubble { position: absolute; border-radius: 50%; opacity: .14; animation: float 5s ease-in-out infinite alternate; }
+  @keyframes float { from { transform: translateY(0) } to { transform: translateY(-26px) } }
+  .card { position: relative; width: min(92vw, 560px); text-align: center; padding: 18px 20px 26px; }
+  h1 { margin: 0; font-size: clamp(44px, 9vw, 84px); color: #7fe07a; font-weight: 800; letter-spacing: .5px; line-height: .9; }
+  h2 { margin: 0 0 6px; font-size: clamp(26px, 5vw, 48px); color: #ffffff; font-weight: 800; line-height: 1; }
+  h3 { margin: 2px 0 18px; font-size: clamp(14px, 3vw, 18px); color: #9aa8b8; font-weight: 400; }
+  .bar { height: 22px; border-radius: 12px; background: #1f2733; border: 2px solid #3d4b5c; overflow: hidden; }
+  .bar > div { height: 100%; width: 0%; background: linear-gradient(90deg, #4fa35a, #7fe07a); transition: width .25s ease-out; }
+  #ld-status { margin-top: 10px; font-weight: 700; font-size: 17px; }
+  #ld-tip { margin-top: 14px; min-height: 44px; font-size: 15px; color: #eef2f5; opacity: .9; padding: 8px 12px; border-radius: 12px; background: rgba(31,39,51,.85); }
+  #ld-error { display: none; margin-top: 12px; }
+  #ld-error button { font: inherit; font-weight: 700; padding: 8px 18px; border-radius: 12px; border: 2px solid #7fe07a; background: #2f5f3a; color: white; cursor: pointer; }
+  #ld-note { margin-top: 16px; font-size: 12px; color: #9aa8b8; }
+  #qtstatus { display: none; }
+</style>
+</head>
+<body onload="init()">
+  <div id="bite-loading">
+    <div class="bubble" style="left:6%;top:12%;width:70px;height:70px;background:#7fe07a"></div>
+    <div class="bubble" style="left:80%;top:8%;width:110px;height:110px;background:#5aa8ff;animation-delay:-2s"></div>
+    <div class="bubble" style="left:12%;top:70%;width:90px;height:90px;background:#ffc531;animation-delay:-1s"></div>
+    <div class="bubble" style="left:86%;top:66%;width:60px;height:60px;background:#ff3b3b;animation-delay:-3s"></div>
+    <div class="card">
+      <h1>BITE</h1>
+      <h2>by BITE</h2>
+      <h3>Capture humans. Build the perfect horde.</h3>
+      <div class="bar"><div id="ld-fill"></div></div>
+      <div id="ld-status">…</div>
+      <div id="ld-tip"></div>
+      <div id="ld-error"><div id="ld-error-text"></div><button onclick="location.reload()">Retry</button></div>
+      <div id="ld-note">Desktop browser with keyboard recommended · WASD move · E interact · F bite · Q ability · Tab switch</div>
+      <div id="qtstatus"></div>
+    </div>
+  </div>
+  <div id="screen"></div>
+
+  <script>
+    // ---- loading screen ------------------------------------------------------------------------------
+    const LOADING = { expected: 75058299, build: "945a1bf28232" };
+    const T = {
+        down: (p, a, b) => `Downloading the outbreak… ${p}% (${a} of ${b} MB)`, prep: "Waking up the zombies…", start: "Almost there…",
+        fail: "The game could not be loaded. Check your connection and try again.",
+        tips: ["Guards see the coloured cone. Stay out of it or break line of sight - the meter must not fill.",
+               "Sneak (Ctrl) to fill detection meters slower; run (Shift) only when nobody is looking.",
+               "Pick up the radio with E and throw it with E again: guards go and look at the noise.",
+               "Sneak behind a human and press F to bite. Infected specialists join your squad on the spot.",
+               "Tab switches zombies, H tells the others to stay or follow.",
+               "The Electrician's Sabotage (Q) disables the laser cleanly - a guard comes to check the panel later.",
+               "Any zombie can smash the control panel: a short outage, a zap, and every guard hears it.",
+               "Lockers hide a zombie completely. Getting caught only sends you back to the last checkpoint.",
+               "Everything you infect stays in the Horde Deck for the next outbreak.",
+               "The second visit starts instantly: the files stay cached in your browser."]
+    };
+    const $ = (id) => document.getElementById(id);
+    let tipIndex = Math.floor(Math.random() * T.tips.length);
+    const showTip = () => { $("ld-tip").textContent = T.tips[tipIndex++ % T.tips.length]; };
+    showTip(); const tipTimer = setInterval(showTip, 4500);
+
+    let loaded = 0, ready = false, finished = false;
+    const mb = (b) => (b / 1048576).toFixed(0);
+    const render = () => {
+        if (finished) return;
+        const pct = Math.min(99, Math.floor(loaded / Math.max(1, LOADING.expected) * 100));
+        $("ld-fill").style.width = pct + "%";
+        $("ld-status").textContent = ready ? T.start : (pct >= 99 ? T.prep : T.down(pct, mb(loaded), mb(LOADING.expected)));
+    };
+    const isGameFile = (url) => /\.(wasm|js|json|bin|mesh|png|jpg)(\?|$)/.test(url) && !/bite-sw\.js/.test(url);
+    // count every byte the page receives (fetch is what Emscripten and the pack loader use)
+    const origFetch = window.fetch.bind(window);
+    window.fetch = async (input, init) => {
+        const res = await origFetch(input, init);
+        const url = typeof input === "string" ? input : (input && input.url) || "";
+        if (finished || !res.body || res.status !== 200 || !isGameFile(url)) return res;
+        const reader = res.body.getReader();
+        const stream = new ReadableStream({
+            async pull(controller) {
+                const { done, value } = await reader.read();
+                if (done) { controller.close(); return; }
+                loaded += value.byteLength; render(); controller.enqueue(value);
+            },
+            cancel() { reader.cancel(); }
+        });
+        return new Response(stream, { status: res.status, statusText: res.statusText, headers: res.headers });
+    };
+    const xhrOpen = XMLHttpRequest.prototype.open;                       // fallback for XHR-based loaders
+    XMLHttpRequest.prototype.open = function (...a) { let last = 0; this.addEventListener("progress", (e) => { loaded += e.loaded - last; last = e.loaded; render(); }); return xhrOpen.apply(this, a); };
+    render();
+
+    function gameLoaded() {
+        finished = true; clearInterval(tipTimer);
+        $("ld-fill").style.width = "100%";
+        const ld = $("bite-loading"); ld.classList.add("hidden"); setTimeout(() => ld.remove(), 600);
+    }
+    function gameFailed(e) {
+        console.error(e); clearInterval(tipTimer);
+        $("ld-status").textContent = T.fail; $("ld-error").style.display = "block";
+        $("ld-error-text").textContent = String(e && e.message || e).slice(0, 200);
+    }
+
+    // ---- keyboard focus guard --------------------------------------------------------------------------
+    // Qt for WebAssembly listens for keys on a focus helper inside its shadow DOM; a click inside the canvas
+    // can drop the DOM focus to <body>, after which the game receives no key events. Put it back.
+    const qtKeyboardFocus = () => {
+        const host = document.querySelector("#qt-shadow-container");
+        if (!host) return;
+        const helper = host.shadowRoot && host.shadowRoot.querySelector(".qt-window-focus-helper");
+        if (document.activeElement !== host) (helper || host).focus({ preventScroll: true });
+    };
+    ["pointerup", "mouseup", "touchend"].forEach(t => document.addEventListener(t, () => setTimeout(qtKeyboardFocus, 0), true));
+    document.addEventListener("focusout", (e) => { if (!e.relatedTarget) setTimeout(qtKeyboardFocus, 0); }, true);
+    window.addEventListener("keydown", () => { if (document.activeElement === document.body) qtKeyboardFocus(); }, true);
+    window.addEventListener("focus", () => setTimeout(qtKeyboardFocus, 0));
+    // the game uses Tab to switch zombies: keep the browser from moving focus
+    window.addEventListener("keydown", (e) => { if (e.key === "Tab" && finished) e.preventDefault(); }, false);
+
+    // ---- the small files: one download, written into Qt's in-memory FS before main() ------------------
+    async function loadPack() {
+        const v = "?v=" + LOADING.build;
+        const [index, bin] = await Promise.all([fetch("bite-pack.json" + v).then(r => r.json()), fetch("bite-pack.bin" + v).then(r => r.arrayBuffer())]);
+        const bytes = new Uint8Array(bin);
+        return (module) => {
+            const FS = module.FS;
+            const mkdirs = (path) => { let p = ""; for (const part of path.split("/").slice(0, -1)) { if (!part) continue; p += "/" + part; try { FS.mkdir(p); } catch (e) { /* exists */ } } };
+            for (const f of index) { mkdirs(f.destination); FS.writeFile(f.destination, bytes.subarray(f.offset, f.offset + f.size)); }
+        };
+    }
+
+    async function init() {
+        const screen = document.querySelector("#screen");
+        // Multithreaded Qt needs cross-origin isolation. On hosts without COOP/COEP headers the service worker
+        // adds them and reloads the page once; do not start (and download) Qt until that has happened.
+        if (!window.crossOriginIsolated) {
+            $("ld-status").textContent = T.prep;
+            setTimeout(() => { if (!window.crossOriginIsolated) gameFailed(new Error("The browser did not allow isolation (SharedArrayBuffer). Try reloading, or another browser.")); }, 15000);
+            return;
+        }
+        try {
+            const writePack = await loadPack();
+            await qtLoad({
+                arguments: (new URLSearchParams(location.search).get("args") || "").split(" ").filter(Boolean),
+                noImageDecoding: true,                 // Qt decodes images itself; browser-side decoding of hundreds of PNGs stalls startup
+                noAudioDecoding: true,
+                preRun: [writePack],
+                locateFile: (path) => path + "?v=" + LOADING.build,      // wasm / worker js: same build as this page
+                qt: {
+                    preload: ["bite-assets.json?v=" + LOADING.build],
+                    onLoaded: () => { screen.style.display = "block"; gameLoaded(); setTimeout(qtKeyboardFocus, 0); },
+                    onExit: (exitData) => { gameFailed(new Error("Application exit" + (exitData.code !== undefined ? ` with code ${exitData.code}` : "") + (exitData.text ? ` (${exitData.text})` : ""))); },
+                    entryFunction: window.bite_by_bite_entry,
+                    containerElements: [screen],
+                }
+            });
+        } catch (e) { gameFailed(e); }
+    }
+  </script>
+  <script src="bite_by_bite.js?v=945a1bf28232"></script>
+  <script src="qtloader.js?v=945a1bf28232"></script>
+</body>
+</html>
