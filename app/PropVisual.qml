@@ -28,7 +28,8 @@ Node {
     Loader3D {
         id: modelLoader
         active: root.wantsModel
-        source: root.wantsModel ? Qt.resolvedUrl(root.modelDef.model) : ""
+        // desktop / dojo: relative to this QML file; WebAssembly: the loader preloads assets into /game/assets/...
+        source: root.wantsModel ? (Qt.platform.os === "wasm" ? "file:///game/" + root.modelDef.model.replace(/^(\.\.\/)+/, "") : Qt.resolvedUrl(root.modelDef.model)) : ""
         scale: Qt.vector3d(root.fitScale * 100, root.fitScale * 100, root.fitScale * 100)
         y: (root.modelDef && root.modelDef.footOffset ? root.modelDef.footOffset : 0) * root.fitScale * 100 - root.sink * 100
         eulerRotation.y: root.modelDef && root.modelDef.rotation ? root.modelDef.rotation : 0

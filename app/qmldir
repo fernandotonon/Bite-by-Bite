@@ -19,3 +19,5 @@ ResultsScreen 1.0 ResultsScreen.qml
 SaveSystem 1.0 SaveSystem.qml
 SquadScreen 1.0 SquadScreen.qml
 TitleScreen 1.0 TitleScreen.qml
+AppBridges 1.0 AppBridges.qml
+QmlModules 1.0 QmlModules.qml

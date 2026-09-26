@@ -14,12 +14,18 @@ Item {
     property var store: null
     readonly property string backend: store && store.backend !== undefined ? store.backend : "KeyValueStore"
 
+    // WebAssembly: the app's SaveStore (browser localStorage) - QtQuick.LocalStorage does not exist in the wasm
+    // kit, so the KeyValueStore is created dynamically and only elsewhere. Everything else persists via SQLite.
+    Loader { id: bridges; active: Qt.platform.os === "wasm" && Qt.application.arguments.indexOf("--no-bridges") < 0; source: "AppBridges.qml" }
     function ensureStore() {
         if (store) return store
-        // --autotest runs keep their own store so headless checks never touch real progress
-        var name = Qt.application.arguments.indexOf("--autotest") >= 0 ? "BiteByBiteAutotest" : "BiteByBite"
-        try { store = Qt.createQmlObject('import Clayground.Storage; KeyValueStore { name: "' + name + '" }', save, "KeyValueStore") }
-        catch (e) { console.warn("SaveSystem: no storage backend, progress will not persist", e); store = memoryStore }
+        if (bridges.status === Loader.Ready && bridges.item) store = bridges.item.store
+        else {
+            // --autotest runs keep their own store so headless checks never touch real progress
+            var name = Qt.application.arguments.indexOf("--autotest") >= 0 ? "BiteByBiteAutotest" : "BiteByBite"
+            try { store = Qt.createQmlObject('import Clayground.Storage; KeyValueStore { name: "' + name + '" }', save, "KeyValueStore") }
+            catch (e) { console.warn("SaveSystem: no storage backend, progress will not persist", e); store = memoryStore }
+        }
         return store
     }
     property bool loaded: false

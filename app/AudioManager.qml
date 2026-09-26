@@ -15,8 +15,20 @@ Item {
     readonly property var levels: ({ ui_move: 0.5, ui_select: 0.6, ui_back: 0.5, door: 0.7, step: 0.35, radio: 0.5, alarm: 0.7, win: 0.9, caught: 0.9 })
     property var sounds: ({})
     property real lastStep: 0
+    property var web: null           // WebAudio bridge when it exists (wasm builds of the app)
+
+    // WebAssembly: Qt audio sinks stall the page, so the cues go through the browser AudioContext instead and
+    // no Sound objects are created there.
+    Loader { id: bridges; active: Qt.platform.os === "wasm" && Qt.application.arguments.indexOf("--no-bridges") < 0; source: "AppBridges.qml" }
+    function ensureWeb() {
+        if (web || bridges.status !== Loader.Ready || !bridges.item) return
+        var w = bridges.item.web
+        if (w && w.available) { web = w; names.forEach(function (n) { w.load(n, Qt.resolvedUrl("../assets/audio/" + n + ".wav")) }) }
+    }
+    Component.onCompleted: ensureWeb()
 
     Instantiator {
+        active: Qt.platform.os !== "wasm"
         model: audio.names
         delegate: Sound {
             required property string modelData
@@ -27,6 +39,8 @@ Item {
     }
     function play(name) {
         if (gain <= 0) return
+        if (!web && bridges.active) ensureWeb()
+        if (web) { web.play(name, gain * (levels[name] || 0.6)); return }
         var s = sounds[name]
         if (s) s.play()
     }

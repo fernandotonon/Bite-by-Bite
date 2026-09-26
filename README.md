@@ -38,6 +38,23 @@ Main menu → Outbreaks (mission select) → Briefing → Squad selection (up to
 the mission → Results (rating from the optional objectives) → the Horde Deck now holds every human you
 infected → replay with a different squad to find other routes (janitor service door, brute weak wall).
 
+## Play in the browser
+
+The game is published on GitHub Pages: **https://fernandotonon.github.io/Bite-by-Bite/** (desktop browser with a
+keyboard; a gamepad with the standard layout also works through the browser Gamepad API).
+
+```
+scripts/build-wasm.sh          # Qt 6.11.1 wasm_multithread + emsdk 4.0.7 -> deploy/multithread
+python3 scripts/serve.py deploy/multithread              # local test with COOP/COEP headers
+node scripts/browser-check.mjs "http://localhost:8080/index.html?args=--autotest" --seconds 90
+scripts/deploy-pages.sh        # pushes deploy/multithread to the gh-pages branch
+```
+
+On the web the save data lives in `localStorage`, audio goes through the browser `AudioContext`, and the 3D
+runtime assets are preloaded into Qt's in-memory filesystem (`/game/assets/...`) by the loading page; the
+bundled service worker (`web/bite-sw.js`) adds the cross-origin-isolation headers GitHub Pages cannot send and
+caches the game files per build.
+
 ## Development
 
 ```

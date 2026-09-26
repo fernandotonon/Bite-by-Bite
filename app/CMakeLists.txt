@@ -29,11 +29,20 @@ endforeach()
 
 set_source_files_properties(Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
+# physical gamepads: Apple's GameController framework on macOS, the browser Gamepad API on WebAssembly
+if(APPLE AND NOT IOS)
+    set(BITE_GAMEPAD_SOURCE src/gamepadbridge.mm)
+else()
+    set(BITE_GAMEPAD_SOURCE src/gamepadbridge.cpp)
+endif()
+
 clay_app(bite_by_bite
     VERSION 0.1.0
 
     SOURCES
-        src/gamepadbridge.h src/gamepadbridge.mm
+        src/gamepadbridge.h ${BITE_GAMEPAD_SOURCE}
+        src/savestore.h src/savestore.cpp
+        src/webaudio.h src/webaudio.cpp
 
     LINK_LIBS
         Qt::Core
@@ -52,8 +61,13 @@ clay_app(bite_by_bite
         ${BITE_RES_FILES}
 )
 
-# the generated QML type registration includes <gamepadbridge.h> by bare name
+# the generated QML type registration includes <gamepadbridge.h> etc. by bare name
 target_include_directories(bite_by_bite PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 if(APPLE AND NOT IOS)
     target_link_libraries(bite_by_bite PRIVATE "-framework GameController" "-framework Foundation")
+endif()
+if(EMSCRIPTEN)
+    # Qt Quick 3D plus the preloaded assets need more than Clayground's 64 MB default heap;
+    # it still grows on demand (ALLOW_MEMORY_GROWTH).
+    set_target_properties(bite_by_bite PROPERTIES QT_WASM_INITIAL_MEMORY "256MB")
 endif()
