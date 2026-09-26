@@ -56,13 +56,14 @@ Item {
             }
         }
         Rectangle {   // stay / follow pill
+            id: followPill
             visible: hud.st && hud.st.squad.length > 1
             readonly property string mode: { hud.stateVersion; if (!hud.st) return "follow"; for (var i = 0; i < hud.st.squad.length; i++) if (i !== hud.st.active) return hud.st.squad[i].mode; return "follow" }
             function tapAction() { hud.sim.toggleCommand(); hud.game.refresh() }
             anchors.verticalCenter: parent.verticalCenter
             width: pillText.implicitWidth + 28; height: hud.compact ? 40 : 46; radius: 10
             color: Qt.rgba(0, 0, 0, 0.45); border.color: Theme.border; border.width: 2
-            Text { id: pillText; anchors.centerIn: parent; text: (mode === "follow" ? "\u25B6 Following" : "\u25A0 Staying") + (hud.touch ? "" : "  [H]") + (hud.touch ? "" : "   Tab: switch"); color: Theme.text; font.pixelSize: 13; font.family: Theme.font }
+            Text { id: pillText; anchors.centerIn: parent; text: (followPill.mode === "follow" ? "\u25B6 Following" : "\u25A0 Staying") + (hud.touch ? "" : "  [H]") + (hud.touch ? "" : "   Tab: switch"); color: Theme.text; font.pixelSize: 13; font.family: Theme.font }
             MouseArea { anchors.fill: parent; onClicked: parent.tapAction() }
         }
     }
