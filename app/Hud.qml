@@ -15,6 +15,9 @@ Item {
     property string flash: ""            // "caught" | "checkpoint" | ""
     property real flashUntil: 0
     property bool compact: height < 560
+    property real uiScale: 1                 // the HUD lives in the scaled UI layer: 3D projections are divided by it
+    property bool touch: false               // touch controls shown: hide the keyboard hints
+    function pos(x, z, y) { var p = level ? level.screenPos(x, z, y) : Qt.point(0, 0); return Qt.point(p.x / uiScale, p.y / uiScale) }
 
     function fmtTime(s) { s = Math.max(0, Math.floor(s)); return Math.floor(s / 60) + ":" + (s % 60 < 10 ? "0" : "") + (s % 60) }
 
@@ -41,7 +44,7 @@ Item {
                 }
             }
         }
-        Text { visible: hud.st && hud.st.squad.length > 1; anchors.verticalCenter: parent.verticalCenter; text: "[Tab] switch  [H] stay/follow"; color: Theme.muted; font.pixelSize: 12; font.family: Theme.font }
+        Text { visible: hud.st && hud.st.squad.length > 1 && !hud.touch; anchors.verticalCenter: parent.verticalCenter; text: "[Tab] switch  [H] stay/follow"; color: Theme.muted; font.pixelSize: 12; font.family: Theme.font }
     }
 
     // ---- objective + clock ----
@@ -75,7 +78,7 @@ Item {
             readonly property var h: { hud.stateVersion; return hud.st.humans[index] }
             readonly property real meter: { hud.stateVersion; return h ? h.meter : 0 }
             readonly property string hstate: { hud.stateVersion; return h ? h.state : "" }
-            readonly property point p: { hud.stateVersion; return hud.level && h ? hud.level.screenPos(h.x, h.z, 2.2) : Qt.point(0, 0) }
+            readonly property point p: { hud.stateVersion; return hud.level && h ? hud.pos(h.x, h.z, 2.2) : Qt.point(0, 0) }
             readonly property bool show: h && !h.bitten && (meter > 0.02 || hstate === "alert" || hstate === "investigate" || hstate === "search" || hstate === "suspicious")
             visible: show
             x: p.x - 22; y: p.y - 24
@@ -92,7 +95,7 @@ Item {
             required property int index
             readonly property var c: hud.st.cameras[index]
             readonly property real meter: { hud.stateVersion; return c ? c.meter : 0 }
-            readonly property point p: { hud.stateVersion; return hud.level && c ? hud.level.screenPos(c.x, c.z, c.mountHeight + 0.3) : Qt.point(0, 0) }
+            readonly property point p: { hud.stateVersion; return hud.level && c ? hud.pos(c.x, c.z, c.mountHeight + 0.3) : Qt.point(0, 0) }
             visible: meter > 0.02
             x: p.x - 22; y: p.y - 12
             Rectangle { width: 44; height: 8; radius: 4; color: "#00000088"; border.color: "#ffffff66"
@@ -106,7 +109,7 @@ Item {
             required property int index
             readonly property var zb: { hud.stateVersion; return hud.st.squad[index] }
             readonly property real progress: { hud.stateVersion; return zb && zb.bite ? 1 - zb.bite.left / zb.bite.total : -1 }
-            readonly property point p: { hud.stateVersion; return hud.level && zb ? hud.level.screenPos(zb.x, zb.z, 2.0) : Qt.point(0, 0) }
+            readonly property point p: { hud.stateVersion; return hud.level && zb ? hud.pos(zb.x, zb.z, 2.0) : Qt.point(0, 0) }
             visible: progress >= 0
             x: p.x - 30; y: p.y - 10
             Rectangle { width: 60; height: 10; radius: 5; color: "#00000088"; border.color: Theme.accent
@@ -123,13 +126,14 @@ Item {
         Row {
             id: promptText; anchors.centerIn: parent; spacing: 10
             Rectangle { width: 28; height: 28; radius: 6; color: Theme.accent; anchors.verticalCenter: parent.verticalCenter
-                        Text { anchors.centerIn: parent; text: hud.prompt && hud.prompt.kind === "bite" ? hud.game.input.labels.bite : (hud.prompt && hud.prompt.needs ? hud.game.input.labels.ability : hud.game.input.labels.interact); color: "#102"; font.bold: true; font.pixelSize: 15 } }
+                        Text { anchors.centerIn: parent; text: hud.touch ? "\u261D" : (hud.prompt && hud.prompt.kind === "bite" ? hud.game.input.labels.bite : (hud.prompt && hud.prompt.needs ? hud.game.input.labels.ability : hud.game.input.labels.interact)); color: "#102"; font.bold: true; font.pixelSize: 15 } }
             Text { text: hud.prompt ? hud.prompt.text : ""; color: Theme.text; font.pixelSize: 17; font.family: Theme.font; anchors.verticalCenter: parent.verticalCenter }
         }
     }
     // ---- bottom-left: controls reminder ----
     Text {
         x: 16; anchors.bottom: parent.bottom; anchors.bottomMargin: 12
+        visible: !hud.touch
         text: "WASD move · Shift run · Ctrl sneak · E interact · F bite · Q ability · R checkpoint · Esc pause"
         color: Theme.muted; font.pixelSize: 12; font.family: Theme.font
     }

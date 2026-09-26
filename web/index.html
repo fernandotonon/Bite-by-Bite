@@ -47,7 +47,7 @@
       <div id="ld-status">…</div>
       <div id="ld-tip"></div>
       <div id="ld-error"><div id="ld-error-text"></div><button onclick="location.reload()">Retry</button></div>
-      <div id="ld-note">Desktop browser with keyboard recommended · WASD move · E interact · F bite · Q ability · Tab switch</div>
+      <div id="ld-note">Keyboard: WASD move · E interact · F bite · Q ability · Tab switch — or touch: stick on the left, buttons on the right (landscape)</div>
       <div id="qtstatus"></div>
     </div>
   </div>
@@ -129,6 +129,15 @@
     document.addEventListener("focusout", (e) => { if (!e.relatedTarget) setTimeout(qtKeyboardFocus, 0); }, true);
     window.addEventListener("keydown", () => { if (document.activeElement === document.body) qtKeyboardFocus(); }, true);
     window.addEventListener("focus", () => setTimeout(qtKeyboardFocus, 0));
+    // phones: go fullscreen and lock landscape on the first touch after the game is up (best effort - most
+    // browsers only allow the lock in fullscreen, and Safari has neither)
+    let fullscreenTried = false;
+    window.addEventListener("touchend", () => {
+        if (fullscreenTried || !finished) return; fullscreenTried = true;
+        const el = document.documentElement;
+        const fs = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (fs) { try { Promise.resolve(fs.call(el)).then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock("landscape").catch(() => {})).catch(() => {}); } catch (e) {} }
+    }, { passive: true });
     // the game uses Tab to switch zombies: keep the browser from moving focus
     window.addEventListener("keydown", (e) => { if (e.key === "Tab" && finished) e.preventDefault(); }, false);
 

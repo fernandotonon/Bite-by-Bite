@@ -44,16 +44,20 @@ Item {
     property bool run: false
     property bool sneak: false
     property var gamepad: null         // backend hook: { connected, axisX, axisY, run, sneak, buttons: { interact, bite, ... } }
+    property var touch: null           // TouchControls: same shape as a gamepad
     property var gamepadWas: ({})
+    property var touchWas: ({})
 
     function isHeld(action) { var ks = keys[action]; for (var i = 0; i < ks.length; i++) if (held[ks[i]]) return true; return false }
     function refreshHeld() {
         var x = (isHeld("moveRight") ? 1 : 0) - (isHeld("moveLeft") ? 1 : 0)
         var z = (isHeld("moveDown") ? 1 : 0) - (isHeld("moveUp") ? 1 : 0)
         var r = isHeld("run"), s = isHeld("sneak")
-        if (gamepad && gamepad.connected) {
-            if (Math.abs(gamepad.axisX) > 0.2 || Math.abs(gamepad.axisY) > 0.2) { x = gamepad.axisX; z = gamepad.axisY }
-            r = r || !!gamepad.run; s = s || !!gamepad.sneak
+        var srcs = [gamepad, touch]
+        for (var i = 0; i < srcs.length; i++) {
+            var g = srcs[i]; if (!g || !g.connected) continue
+            if (Math.abs(g.axisX) > 0.2 || Math.abs(g.axisY) > 0.2) { x = g.axisX; z = g.axisY }
+            r = r || !!g.run; s = s || !!g.sneak
         }
         moveX = x; moveZ = z; run = r; sneak = s
     }
@@ -74,11 +78,12 @@ Item {
     function isMovement(a) { return a === "moveUp" || a === "moveDown" || a === "moveLeft" || a === "moveRight" || a === "run" || a === "sneak" }
     function clear() { held = ({}); refreshHeld() }
     // gamepad buttons are polled: an edge (false -> true) fires the action
-    function poll() {
-        if (!gamepad || !gamepad.connected) return
+    function poll() { pollSource(gamepad, gamepadWas); pollSource(touch, touchWas) }
+    function pollSource(src, was) {
+        if (!src || !src.connected) return
         refreshHeld()
-        var b = gamepad.buttons || {}
+        var b = src.buttons || {}
         serial++
-        for (var a in b) { if (b[a] && !gamepadWas[a]) triggered(a, serial); gamepadWas[a] = !!b[a] }
+        for (var a in b) { if (b[a] && !was[a]) triggered(a, serial); was[a] = !!b[a] }
     }
 }

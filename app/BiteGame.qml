@@ -26,6 +26,10 @@ FocusScope {
     readonly property bool noModels: appArgs.indexOf("--no-models") >= 0
     property alias input: input
     property alias level: level
+    // small screens (phones in landscape): the 2D UI is designed for ~1280x720 and scales down as a whole
+    readonly property real uiScale: Math.min(1, height / 720, width / 1100)
+    readonly property bool touchShown: touch.shown
+    readonly property var hudPrompt: hud.prompt
     property alias save: save
     property alias audio: audio
 
@@ -41,7 +45,7 @@ FocusScope {
     Keys.onReleased: function (e) { input.keyReleased(e) }
     onActiveFocusChanged: if (!activeFocus) input.clear()
     Component.onCompleted: {
-        save.load(); forceActiveFocus(); attachGamepad()
+        save.load(); forceActiveFocus(); attachGamepad(); input.touch = touch
         Qt.callLater(function () { console.log("BiteByBite: save backend", save.backend, "unlocked", JSON.stringify(save.progress.unlocked), "models", !noModels) })
         if (appArgs.indexOf("--autostart") >= 0) debugStart()
     }
@@ -191,12 +195,22 @@ FocusScope {
         mission: game.mission
         showCones: save.settings.showCones
         useModels: !game.noModels
+        reducedFx: game.touchShown || game.appArgs.indexOf("--reduced-fx") >= 0     // phones: no shadows / MSAA
     }
+    // a touch anywhere reveals the touch controls; PointHandler is passive, so menus keep their clicks
+    PointHandler { acceptedDevices: PointerDevice.TouchScreen; onActiveChanged: if (active) touch.shown = true }
+    Item {
+        id: ui
+        transformOrigin: Item.TopLeft
+        scale: game.uiScale
+        width: game.width / game.uiScale
+        height: game.height / game.uiScale
     Hud {
         id: hud
         anchors.fill: parent
         visible: game.screen === "playing"
-        game: game; level: level
+        game: game; level: level; uiScale: game.uiScale
+        touch: game.touchShown
     }
     TitleScreen { id: title; anchors.fill: parent; visible: game.screen === "title"; game: game
                   onPlay: game.screen = "missions"; onDeck: game.screen = "deck"; onQuit: game.quitRequested() }
@@ -219,4 +233,6 @@ FocusScope {
                     onReplay: { squadScreen.reset(); game.screen = "squad" }
                     onDeck: game.screen = "deck"
                     onMissions: { game.sim = null; level.sim = null; hud.sim = null; game.screen = "missions" } }
+    TouchControls { id: touch; anchors.fill: parent; game: game; input: input; z: 50 }
+    }
 }

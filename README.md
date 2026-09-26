@@ -40,8 +40,9 @@ infected → replay with a different squad to find other routes (janitor service
 
 ## Play in the browser
 
-The game is published on GitHub Pages: **https://fernandotonon.github.io/Bite-by-Bite/** (desktop browser with a
-keyboard; a gamepad with the standard layout also works through the browser Gamepad API).
+The game is published on GitHub Pages: **https://fernandotonon.github.io/Bite-by-Bite/** - desktop browsers with a
+keyboard or a standard-layout gamepad, and phones/tablets in landscape (touch controls appear on the first touch:
+floating stick on the left, action buttons on the right; effects are reduced there).
 
 ```
 scripts/build-wasm.sh          # Qt 6.11.1 wasm_multithread + emsdk 4.0.7 -> deploy/multithread
