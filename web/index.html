@@ -112,6 +112,12 @@
     }
     function gameFailed(e) {
         console.error(e); clearInterval(tipTimer);
+        if (!$("ld-status")) {          // the loading screen is gone (the app exited after it started): show a plain banner
+            const b = document.createElement("div");
+            b.style.cssText = "position:fixed;left:0;right:0;bottom:0;padding:14px;background:#1f2733;color:#eef2f5;font:15px Helvetica Neue,Arial;text-align:center;z-index:20";
+            b.innerHTML = "The game stopped: " + String(e && e.message || e).slice(0, 160).replace(/</g, "&lt;") + ' &nbsp; <a href="#" onclick="location.reload();return false" style="color:#7fe07a">Reload</a>';
+            document.body.appendChild(b); return;
+        }
         $("ld-status").textContent = T.fail; $("ld-error").style.display = "block";
         $("ld-error-text").textContent = String(e && e.message || e).slice(0, 200);
     }
