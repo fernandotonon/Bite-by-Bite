@@ -41,7 +41,7 @@ Item {
     }
     Panel {
         anchors.right: parent.right; anchors.rightMargin: 40; y: 110; width: 340; height: parent.height - 170
-        CharacterStage { x: 20; y: 16; width: parent.width - 40; height: 170; assetId: screen.currentUnlocked ? screen.current.asset : ""; visible: screen.currentUnlocked; modelHeight: screen.currentUnlocked && screen.current.id === "brute" ? 2.05 : 1.75 }
+        CharacterStage { x: 20; y: 16; width: parent.width - 40; height: 170; reducedFx: game && game.reducedFx; assetId: screen.currentUnlocked ? screen.current.asset : ""; visible: screen.currentUnlocked; modelHeight: screen.currentUnlocked && screen.current.id === "brute" ? 2.05 : 1.75 }
         Rectangle { visible: !screen.currentUnlocked; x: 20; y: 16; width: parent.width - 40; height: 170; radius: 10; color: Theme.bg; Text { anchors.centerIn: parent; text: "?"; color: "#444"; font.pixelSize: 90; font.bold: true } }
         Column {
             x: 22; y: 200; width: parent.width - 44; spacing: 8

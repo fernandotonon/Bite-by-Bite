@@ -29,6 +29,7 @@ FocusScope {
     // small screens (phones in landscape): the 2D UI is designed for ~1280x720 and scales down as a whole
     readonly property real uiScale: Math.min(1, height / 720, width / 1100)
     readonly property bool touchShown: touch.shown
+    readonly property bool reducedFx: touchShown || appArgs.indexOf("--reduced-fx") >= 0 || Qt.platform.os === "android" || Qt.platform.os === "ios"
     readonly property var hudPrompt: hud.prompt
     function hudSquadTap(x, y) { return hud.squadTap(x, y) }      // touch on the squad strip (UI-layer coordinates)
     property alias save: save
@@ -201,7 +202,7 @@ FocusScope {
         mission: game.mission
         showCones: save.settings.showCones
         useModels: !game.noModels
-        reducedFx: game.touchShown || game.appArgs.indexOf("--reduced-fx") >= 0     // phones: no shadows / MSAA
+        reducedFx: game.reducedFx     // phones: no shadows / MSAA (MSAA offscreen targets also come out black on mobile WebGL)
     }
     // a touch anywhere reveals the touch controls; PointHandler is passive, so menus keep their clicks
     PointHandler { acceptedDevices: PointerDevice.TouchScreen; onActiveChanged: if (active) touch.shown = true }

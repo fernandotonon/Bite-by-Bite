@@ -14,9 +14,9 @@ Item {
     Rectangle { anchors.fill: parent; color: Theme.bg }
     View3D {
         anchors.fill: parent
-        environment: SceneEnvironment { clearColor: Theme.bg; backgroundMode: SceneEnvironment.Color; antialiasingMode: SceneEnvironment.MSAA }
+        environment: SceneEnvironment { clearColor: Theme.bg; backgroundMode: SceneEnvironment.Color; antialiasingMode: game && game.reducedFx ? SceneEnvironment.NoAA : SceneEnvironment.MSAA }
         PerspectiveCamera { position: Qt.vector3d(0, 700, 1500); eulerRotation.x: -26; fieldOfView: 30 }
-        DirectionalLight { eulerRotation: Qt.vector3d(-45, -30, 0); brightness: 1.1; castsShadow: true }
+        DirectionalLight { eulerRotation: Qt.vector3d(-45, -30, 0); brightness: 1.1; castsShadow: !(game && game.reducedFx) }
         DirectionalLight { eulerRotation: Qt.vector3d(-20, 150, 0); brightness: 0.4; color: "#b8c8ff" }
         Box3D { y: -6; width: 1600; height: 6; depth: 1200; color: "#26303c"; useToonShading: true; showEdges: false }
         Node {

@@ -55,7 +55,7 @@ Item {
     Panel {
         id: info
         x: 40; y: 330; width: parent.width - 80; height: 120
-        CharacterStage { anchors.right: parent.right; anchors.rightMargin: 10; y: -60; width: 200; height: 175; visible: !!info.ch; assetId: info.ch ? info.ch.asset : ""; modelHeight: info.ch && info.ch.id === "brute" ? 2.05 : 1.75 }
+        CharacterStage { anchors.right: parent.right; anchors.rightMargin: 10; y: -60; width: 200; height: 175; reducedFx: game && game.reducedFx; visible: !!info.ch; assetId: info.ch ? info.ch.asset : ""; modelHeight: info.ch && info.ch.id === "brute" ? 2.05 : 1.75 }
         readonly property var ch: screen.atStartRow ? null : screen.roster[screen.index]
         Column {
             x: 22; y: 16; width: parent.width - 260; spacing: 4

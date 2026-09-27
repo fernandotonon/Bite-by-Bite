@@ -9,12 +9,13 @@ Item {
     property real modelHeight: 1.8
     property bool spinning: true
     property color floorColor: "#26303c"
+    property bool reducedFx: false
     View3D {
         anchors.fill: parent
-        environment: SceneEnvironment { clearColor: "transparent"; backgroundMode: SceneEnvironment.Transparent; antialiasingMode: SceneEnvironment.MSAA }
+        environment: SceneEnvironment { clearColor: "transparent"; backgroundMode: SceneEnvironment.Transparent; antialiasingMode: stage.reducedFx ? SceneEnvironment.NoAA : SceneEnvironment.MSAA }
         // framed from the model height so the head never leaves the top of the stage
         PerspectiveCamera { position: Qt.vector3d(0, stage.modelHeight * 55, stage.modelHeight * 280); eulerRotation.x: -6; fieldOfView: 30 }
-        DirectionalLight { eulerRotation: Qt.vector3d(-45, -30, 0); brightness: 1.1; castsShadow: true }
+        DirectionalLight { eulerRotation: Qt.vector3d(-45, -30, 0); brightness: 1.1; castsShadow: !stage.reducedFx }
         DirectionalLight { eulerRotation: Qt.vector3d(-20, 150, 0); brightness: 0.45; color: "#b8c8ff" }
         Model { source: "#Cylinder"; y: -3; scale: Qt.vector3d(1.6, 0.06, 1.6); materials: PrincipledMaterial { baseColor: stage.floorColor; roughness: 1 } }
         Node {
