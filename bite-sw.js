@@ -4,8 +4,8 @@
  *   - caches the game files (wasm, js, assets) per build so the second visit loads from disk,
  *   - serves `.mesh` files from their `.mesh.gz` copy, inflated with DecompressionStream
  *     (static hosts do not compress model/mesh).
- *  e4888e5af2d3 is replaced at deploy time; a new build means a new cache, old ones are dropped. */
-const BUILD_ID = "e4888e5af2d3";
+ *  31b88b638484 is replaced at deploy time; a new build means a new cache, old ones are dropped. */
+const BUILD_ID = "31b88b638484";
 const CACHE = "bite-" + BUILD_ID;
 let coepCredentialless = false;
 
