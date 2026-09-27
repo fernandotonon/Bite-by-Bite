@@ -44,5 +44,9 @@ var tuning = {
     exitHoldTime: 0.6,              // seconds all zombies must be inside the exit zone
     caughtRestartDelay: 1.1,        // seconds of "CAUGHT" flash before the checkpoint reload
 
-    grid: 0.5                       // A* cell size for guard / follower navigation
+    grid: 0.5,                      // A* cell size for guard / follower navigation
+
+    // mall: food bait (chef) and dogs
+    baitCooldown: 8, baitTime: 9, baitNoise: 7.0,
+    dogView: { angle: 130, range: 3.5 }, dogHearing: 1.8, dogSpeed: 1.5
 }

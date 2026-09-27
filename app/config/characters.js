@@ -86,15 +86,103 @@ var characters = [
         biteTime: 0.9,
         unlockedAtStart: false, capturable: true
     },
-    // Future roster - locked silhouettes in the deck; missions may unlock them later (assets already generated).
-    { id: "doctor", name: "???", occupation: "Doctor", asset: "zombie_doctor", humanAsset: "doctor_human", color: "#dfe6ea", silhouette: "#c7d0d6", capturable: false, unlockedAtStart: false },
-    { id: "guard", name: "???", occupation: "Security guard", asset: "zombie_security_guard", humanAsset: "guard", color: "#2f3d6e", silhouette: "#3b4a7a", capturable: false, unlockedAtStart: false },
-    { id: "chef", name: "???", occupation: "Chef", asset: "zombie_chef", humanAsset: "chef_human", color: "#f0f0f0", silhouette: "#dcdcdc", capturable: false, unlockedAtStart: false },
-    { id: "child", name: "???", occupation: "Child", asset: "zombie_child", humanAsset: "child_human", color: "#f2b56b", silhouette: "#e5a35a", capturable: false, unlockedAtStart: false },
-    { id: "athlete", name: "???", occupation: "Athlete", asset: "zombie_athlete", humanAsset: "athlete_human", color: "#d9403a", silhouette: "#c93832", capturable: false, unlockedAtStart: false },
-    { id: "firefighter", name: "???", occupation: "Firefighter", asset: "zombie_firefighter", humanAsset: "firefighter_human", color: "#c8281e", silhouette: "#b3241b", capturable: false, unlockedAtStart: false },
-    { id: "office", name: "???", occupation: "Office worker", asset: "zombie_office_worker", humanAsset: "office_worker_human", color: "#7d8fa8", silhouette: "#6f7f96", capturable: false, unlockedAtStart: false },
-    { id: "screamer", name: "???", occupation: "Screamer", asset: "zombie_screamer", humanAsset: "screamer_human", color: "#9b59b6", silhouette: "#8a4fa3", capturable: false, unlockedAtStart: false }
+    // ---- the rest of the roster: each is captured in its campaign mission ---------------------------------
+    {
+        id: "guard", name: "Security Guard Zombie", occupation: "Mall security",
+        asset: "zombie_security_guard", humanAsset: "guard", color: "#2f3d6e",
+        ability: { id: "securityAccess", label: "Security access", hint: "Opens security doors, shutters and checkpoints." },
+        passive: { label: "One of the boys", hint: "Guards take longer to grow suspicious of him from afar inside security zones." },
+        weakness: { label: "Jangling keys", hint: "Every step makes noise; average speed." },
+        traits: { disguiseZone: "security", noisy: true, clumsyTech: true },
+        speed: { walk: 2.2, run: 3.5, sneak: 1.2 },
+        noise: { walk: 2.0, run: 5.0 },
+        biteTime: 1.6,
+        unlockedAtStart: false, capturable: true
+    },
+    {
+        id: "chef", name: "Chef Zombie", occupation: "Food-court chef",
+        asset: "zombie_chef", humanAsset: "chef_human", color: "#f0f0f0",
+        ability: { id: "bait", label: "Food bait", hint: "Throws food that draws guards and dogs to it." },
+        passive: { label: "Kitchen pass", hint: "Looks like staff from afar in kitchens and service areas." },
+        weakness: { label: "Not an electrician", hint: "Cannot operate or smash electronic panels." },
+        traits: { disguiseZone: "kitchen", noSmash: true, clumsyTech: true },
+        speed: { walk: 2.3, run: 3.6, sneak: 1.3 },
+        noise: { walk: 0, run: 3.5 },
+        biteTime: 1.6,
+        unlockedAtStart: false, capturable: true
+    },
+    {
+        id: "child", name: "Kid Zombie", occupation: "Schoolkid",
+        asset: "zombie_child", humanAsset: "child_human", color: "#f2b56b",
+        ability: { id: "crawl", label: "Crawl", hint: "Squeezes through vents and small passages." },
+        passive: { label: "Small", hint: "Harder to spot: detection fills slower." },
+        weakness: { label: "Tiny arms", hint: "Cannot push carts or other movable objects." },
+        traits: { small: true, noPush: true, clumsyTech: true },
+        speed: { walk: 2.5, run: 3.9, sneak: 1.5 },
+        noise: { walk: 0, run: 2.5 },
+        biteTime: 1.8,
+        unlockedAtStart: false, capturable: true
+    },
+    {
+        id: "athlete", name: "Athlete Zombie", occupation: "Gym teacher",
+        asset: "zombie_athlete", humanAsset: "athlete_human", color: "#d9403a",
+        ability: { id: "vault", label: "Vault", hint: "Hops over low barriers and railings." },
+        passive: { label: "Fastest legs", hint: "Runs faster than any other zombie." },
+        weakness: { label: "Stomping", hint: "Running is loud." },
+        traits: { clumsyTech: true },
+        speed: { walk: 2.6, run: 4.8, sneak: 1.4 },
+        noise: { walk: 0, run: 5.5 },
+        biteTime: 1.4,
+        unlockedAtStart: false, capturable: true
+    },
+    {
+        id: "office", name: "Office Zombie", occupation: "Office worker",
+        asset: "zombie_office_worker", humanAsset: "office_worker_human", color: "#7d8fa8",
+        ability: { id: "terminal", label: "Terminal", hint: "Operates terminals, badge readers, elevators and building controls." },
+        passive: { label: "Badge on a lanyard", hint: "Looks like staff from afar in office zones." },
+        weakness: { label: "Desk body", hint: "Cannot smash equipment or push heavy objects." },
+        traits: { disguiseZone: "office", noSmash: true, clumsyTech: true },
+        speed: { walk: 2.3, run: 3.5, sneak: 1.3 },
+        noise: { walk: 0, run: 3.5 },
+        biteTime: 1.7,
+        unlockedAtStart: false, capturable: true
+    },
+    {
+        id: "firefighter", name: "Firefighter Zombie", occupation: "Firefighter",
+        asset: "zombie_firefighter", humanAsset: "firefighter_human", color: "#c8281e",
+        ability: { id: "rescue", label: "Rescue", hint: "Operates fire valves and walks through fire and smoke." },
+        passive: { label: "Turnout gear", hint: "Immune to fire, heat and smoke." },
+        weakness: { label: "Heavy gear", hint: "Sneaks slowly." },
+        traits: { fireproof: true, clumsyTech: true },
+        speed: { walk: 2.2, run: 3.4, sneak: 0.9 },
+        noise: { walk: 0, run: 4.0 },
+        biteTime: 1.6,
+        unlockedAtStart: false, capturable: true
+    },
+    {
+        id: "screamer", name: "Screamer Zombie", occupation: "Rock singer",
+        asset: "zombie_screamer", humanAsset: "screamer_human", color: "#9b59b6",
+        ability: { id: "scream", label: "Scream", hint: "A huge directed noise: every guard around comes running to it." },
+        passive: { label: "Iron ears", hint: "Alarms and sonic stuns do nothing to her." },
+        weakness: { label: "Hoarse", hint: "Cannot sneak right after screaming." },
+        traits: { sonicProof: true, clumsyTech: true },
+        speed: { walk: 2.4, run: 3.7, sneak: 1.3 },
+        noise: { walk: 0, run: 3.5 },
+        biteTime: 1.6,
+        unlockedAtStart: false, capturable: true
+    },
+    {
+        id: "doctor", name: "Doctor Zombie", occupation: "Research doctor",
+        asset: "zombie_doctor", humanAsset: "doctor_human", color: "#dfe6ea",
+        ability: { id: "sedate", label: "Sedate", hint: "Puts one nearby human to sleep for a while - quietly." },
+        passive: { label: "Medical access", hint: "Opens medical doors." },
+        weakness: { label: "Desk-bound", hint: "Slow, cannot push heavy objects or smash equipment." },
+        traits: { medicalAccess: true, noSmash: true, clumsyTech: true },
+        speed: { walk: 1.9, run: 2.9, sneak: 1.1 },
+        noise: { walk: 0, run: 3.0 },
+        biteTime: 1.8,
+        unlockedAtStart: false, capturable: true
+    }
 ]
 
 var byId = {}

@@ -115,10 +115,38 @@ Item {
                 color: "#bcc7cd"; useToonShading: true; showEdges: false; receivesShadows: true; castsShadows: false; lighting: 1
             }
         }
-        // maintenance zones: darker floor
+        // zone floors: maintenance grey, kitchen warm, security blue, office beige (data-driven tints)
         Repeater3D {
-            model: level.mission ? level.mission.zones.filter(function (z) { return z.kind === "maintenance" }) : []
-            delegate: Box3D { required property var modelData; x: (modelData.x + modelData.w / 2) * 100; z: (modelData.z + modelData.d / 2) * 100; y: 1; width: modelData.w * 100; height: 0.6; depth: modelData.d * 100; color: "#9aa8ae"; useToonShading: true; showEdges: false; castsShadows: false }
+            model: level.mission ? level.mission.zones.filter(function (z) { return ["maintenance", "kitchen", "security", "office", "fire", "smoke"].indexOf(z.kind) >= 0 }) : []
+            delegate: Box3D {
+                required property var modelData
+                x: (modelData.x + modelData.w / 2) * 100; z: (modelData.z + modelData.d / 2) * 100; y: 1; width: modelData.w * 100; height: 0.6; depth: modelData.d * 100
+                color: ({ maintenance: "#9aa8ae", kitchen: "#d9c9a8", security: "#9fb0cf", office: "#cfc6b4", fire: "#d9a08a", smoke: "#8f8f95" })[modelData.kind] || "#9aa8ae"
+                useToonShading: true; showEdges: false; castsShadows: false
+            }
+        }
+        // controls (consoles, shutter switches, valves, terminals...): a prop with a status light
+        Repeater3D {
+            model: level.st ? level.st.controls.length : 0
+            delegate: Node {
+                required property int index
+                readonly property var c: level.st.controls[index]
+                readonly property bool used: { level.stateVersion; return level.st.controls[index].used }
+                x: c.x * 100; z: c.z * 100
+                eulerRotation.y: c.facing * 180 / Math.PI
+                PropVisual { assetId: c.asset || "electrical_panel"; useModels: level.useModels }
+                Box3D { y: 130; z: 20; width: 12; height: 12; depth: 4; color: used ? "#49e06a" : "#ffc531"; lighting: 0; showEdges: false; castsShadows: false }
+            }
+        }
+        // traversals (vents, vault points): a hatch at each end
+        Repeater3D {
+            model: level.st ? level.st.traversals.length : 0
+            delegate: Node {
+                required property int index
+                readonly property var t: level.st.traversals[index]
+                PropVisual { x: t.from.x * 100; z: t.from.z * 100; assetId: t.asset || "vent_hatch"; useModels: level.useModels }
+                PropVisual { x: t.to.x * 100; z: t.to.z * 100; assetId: t.asset || "vent_hatch"; useModels: level.useModels }
+            }
         }
         // exit / checkpoint zones
         Repeater3D {
@@ -156,13 +184,15 @@ Item {
                 readonly property bool open: { level.stateVersion; return level.st.doors[index].open }
                 readonly property bool vertical: d.d > d.w
                 x: (vertical ? d.x + d.w / 2 : d.x) * 100; z: (vertical ? d.z : d.z + d.d / 2) * 100
-                eulerRotation.y: open ? (vertical ? 80 : -80) : 0
+                eulerRotation.y: open && !d.sealed ? (vertical ? 80 : -80) : 0        // sealed doors (shutters) slide up instead of swinging
                 Behavior on eulerRotation.y { NumberAnimation { duration: 350; easing.type: Easing.OutCubic } }
-                PropVisual {   // the leaf: a hospital door, or the teal service door for locked maintenance passages
+                y: open && d.sealed ? level.wallH * 100 * 0.85 : 0
+                Behavior on y { NumberAnimation { duration: 900; easing.type: Easing.InOutQuad } }
+                PropVisual {   // the leaf: a hospital door, the teal service door for locked passages, or the mission's own asset
                     x: vertical ? 0 : d.w * 50; z: vertical ? d.d * 50 : 0
                     eulerRotation.y: vertical ? 90 : 0
-                    assetId: d.lockType ? "maintenance_door" : "hospital_door"
-                    height: level.wallH * 1.12
+                    assetId: d.asset ? d.asset : (d.lockType ? "maintenance_door" : "hospital_door")
+                    height: d.sealed ? level.wallH * 1.0 : level.wallH * 1.12
                     useModels: level.useModels
                     placeholderWidth: d.d > d.w ? d.d : d.w
                 }

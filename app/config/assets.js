@@ -54,7 +54,41 @@ var assets = {
     athlete_human:          { unitDepth: 0.271, unitWidth: 0.88, footOffset: 0.511, unitHeight: 1.023, height: 1.75, rotation: 180, model: "../assets/runtime/athlete_human/PropAthleteHuman.qml", representation: "model", status: "generated", placeholder: { shape: "person", color: "#6a4fb3", accent: "#f0d2b6" } },
     firefighter_human:      { unitDepth: 0.22, unitWidth: 1.022, footOffset: 0.476, unitHeight: 0.921, height: 1.85, rotation: 180, model: "../assets/runtime/firefighter_human/PropFirefighterHuman.qml", representation: "model", status: "generated", placeholder: { shape: "person", color: "#c8a35a", accent: "#f0d2b6" } },
     office_worker_human:    { unitDepth: 0.221, unitWidth: 0.943, footOffset: 0.511, unitHeight: 1.023, height: 1.75, rotation: 180, model: "../assets/runtime/office_worker_human/PropOfficeWorkerHuman.qml", representation: "model", status: "generated", placeholder: { shape: "person", color: "#e9e4d8", accent: "#f0d2b6" } },
-    screamer_human:         { unitDepth: 0.177, unitWidth: 1.024, footOffset: 0.487, unitHeight: 0.973, height: 1.75, rotation: 180, model: "../assets/runtime/screamer_human/PropScreamerHuman.qml", representation: "model", status: "generated", placeholder: { shape: "person", color: "#9b59b6", accent: "#f0d2b6" } }
+    screamer_human:         { unitDepth: 0.177, unitWidth: 1.024, footOffset: 0.487, unitHeight: 0.973, height: 1.75, rotation: 180, model: "../assets/runtime/screamer_human/PropScreamerHuman.qml", representation: "model", status: "generated", placeholder: { shape: "person", color: "#9b59b6", accent: "#f0d2b6" } },
+    // PLACEHOLDER: no concept art for the guard dog or the food bait yet
+    dog:                    { height: 0.7, rotation: 0, model: "", representation: "placeholder", status: "placeholder", placeholder: { shape: "dog", color: "#8a6a3f", accent: "#5e4526" } },
+    bait:                   { height: 0.3, rotation: 0, model: "", representation: "placeholder", status: "placeholder", placeholder: { shape: "food", color: "#e0742f", accent: "#f2c02f" } },
+    // campaign locations and props (generated from docs/concept, batch 4)
+    mall_building:      { height: 6.0, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "building", color: "#e9e4d8", accent: "#3a8f8a" } },
+    storefront:         { height: 3.5, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "building", color: "#3a8f8a", accent: "#f2c02f", w: 4, d: 1 } },
+    dock_shutter:       { height: 2.6, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "shutter", color: "#9aa3ad", accent: "#f2c02f" } },
+    security_gate:      { height: 2.1, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "gate", color: "#9aa3ad", accent: "#3a8f8a" } },
+    food_court_table:   { height: 0.8, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "table", color: "#e9e4d8", accent: "#3a8f8a" } },
+    school_building:    { height: 6.0, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "building", color: "#f2d47a", accent: "#3a8f8a" } },
+    school_desk:        { height: 0.8, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "desk", color: "#d9a066", accent: "#3a8f8a" } },
+    school_lockers:     { height: 1.9, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "locker", color: "#f2c02f", accent: "#3a8f8a" } },
+    vent_hatch:         { height: 0.9, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "hatch", color: "#9aa3ad", accent: "#2b3a5e" } },
+    gym_bleachers:      { height: 1.2, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "box", color: "#3a8f8a", accent: "#e9e4d8", w: 3, d: 1.5 } },
+    office_building:    { height: 8.0, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "building", color: "#e9e4d8", accent: "#5b8fc9" } },
+    office_cubicle:     { height: 1.5, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "desk", color: "#3a8f8a", accent: "#e9e4d8" } },
+    server_rack:        { height: 2.0, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "locker", color: "#2b3a5e", accent: "#49e06a" } },
+    meeting_table:      { height: 0.8, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "table", color: "#e9e4d8", accent: "#3a8f8a", w: 2.4, d: 1.2 } },
+    elevator:           { height: 2.4, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "door", color: "#9aa3ad", accent: "#3a8f8a" } },
+    reception_desk:     { height: 1.1, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "console", color: "#e9e4d8", accent: "#f2c02f", w: 2.6 } },
+    firehouse_building: { height: 6.0, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "building", color: "#d9403a", accent: "#e9e4d8" } },
+    fire_engine:        { height: 3.0, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "truck", color: "#d9403a", accent: "#e9e4d8" } },
+    fire_valve:         { height: 1.1, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "jar", color: "#3a8f8a", accent: "#d9403a" } },
+    vent_fan:           { height: 1.6, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "box", color: "#3a8f8a", accent: "#9aa3ad", w: 1.4, d: 0.8 } },
+    gear_rack:          { height: 1.9, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "locker", color: "#d9403a", accent: "#f2c02f" } },
+    studio_building:    { height: 6.0, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "building", color: "#e9e4d8", accent: "#d9403a" } },
+    studio_camera:      { height: 1.6, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "camera", color: "#e9e4d8", accent: "#1c1f27" } },
+    control_console:    { height: 1.2, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "console", color: "#e9e4d8", accent: "#5aa8ff", w: 3 } },
+    stage_lights:       { height: 2.8, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "pillar", color: "#2b3a5e", accent: "#f2c02f" } },
+    lab_building:       { height: 6.0, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "building", color: "#e9e4d8", accent: "#7fe07a" } },
+    containment_cell:   { height: 2.4, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "cell", color: "#3a8f8a", accent: "#bfe8ff" } },
+    med_scanner:        { height: 1.6, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "bed", color: "#e9e4d8", accent: "#3a8f8a" } },
+    lab_console:        { height: 1.2, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "console", color: "#e9e4d8", accent: "#7fe07a", w: 2 } },
+    specimen_tank:      { height: 1.8, rotation: 180, model: "", representation: "placeholder", status: "pending", placeholder: { shape: "jar", color: "#3a8f8a", accent: "#7fff7a" } }
 }
 
 function get(id) { return assets[id] || null }

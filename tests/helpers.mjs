@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 const here = dirname(fileURLToPath(import.meta.url))
 export const cfg = (f) => loadQmlJs(join(here, "..", "app", "config", f))
-export const Ch = cfg("characters.js"), Mi = cfg("missions.js"), As = cfg("assets.js"), Tu = cfg("tuning.js").tuning
+export const Ch = cfg("characters.js"), Mi = cfg("campaign.js"), As = cfg("assets.js"), Tu = cfg("tuning.js").tuning
 export const { createSim } = loadQmlJs(join(here, "..", "app", "scripts", "Sim.js"))
 export const DT = 1 / 60
 

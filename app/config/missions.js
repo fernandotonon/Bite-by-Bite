@@ -148,7 +148,7 @@ var hospital = {
     ]
 }
 
-var missions = [hospital]
+var missions = [hospital]     // the other campaign missions register themselves below (one file each)
 var byId = {}
 for (var i = 0; i < missions.length; i++) byId[missions[i].id] = missions[i]
 function get(id) { return byId[id] || null }

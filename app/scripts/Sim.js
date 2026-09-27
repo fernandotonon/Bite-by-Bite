@@ -23,6 +23,10 @@ function createSim(defs) {
     var nextId = 1
     var navDirty = true, nav = null
 
+    // what opens a locked door: an ability id, a trait, or a control (data; missions only name the lockType)
+    var LOCKS = T.locks || { maintenance: { ability: "unlock", label: "Master key" }, security: { ability: "securityAccess", label: "Security access" }, medical: { trait: "medicalAccess", label: "Medical access" } }
+    function canUnlock(ch, lockType) { var l = LOCKS[lockType]; if (!l) return false; return (l.ability && ch.ability && ch.ability.id === l.ability) || (l.trait && ch.traits && ch.traits[l.trait]) }
+    function lockLabel(lockType) { var l = LOCKS[lockType]; return l ? l.label : lockType }
     function emit(type, extra) { var e = { type: type, time: S ? S.time : 0 }; if (extra) for (var k in extra) e[k] = extra[k]; events.push(e) }
     function clone(o) { return JSON.parse(JSON.stringify(o)) }
     function rad(deg) { return deg * Math.PI / 180 }
@@ -38,9 +42,10 @@ function createSim(defs) {
                  speed: 0, lastNoise: 0, pushing: false }
     }
     function makeHuman(h) {
-        var view = h.view || (h.kind === "guard" ? T.guardView : { angle: 0, range: 0 })
+        var view = h.view || (h.kind === "guard" ? T.guardView : (h.kind === "dog" ? (T.dogView || { angle: 120, range: 3.5 }) : { angle: 0, range: 0 }))
+        var isGuard = h.kind === "guard" || h.kind === "dog"
         return { id: h.id, kind: h.kind, asset: h.asset, label: h.label || h.id, x: h.x, z: h.z, facing: rad(h.facing || 0),
-                 state: h.kind === "guard" ? "patrol" : (h.wander ? "wander" : "idle"), view: view,
+                 state: isGuard ? "patrol" : (h.wander ? "wander" : "idle"), view: view, hearMul: h.kind === "dog" ? (T.dogHearing || 1.8) : 1, speedMulGuard: h.kind === "dog" ? (T.dogSpeed || 1.5) : 1,
                  patrol: h.patrol || h.wander || null, patrolIndex: 0, waitLeft: 0, path: [], pathTarget: null,
                  meter: 0, meterZombie: null, lastSeen: null, lookLeft: 0, target: null, unseenFor: 0,
                  searchLeft: 0, searchPoint: null, vulnerable: !!h.vulnerable, recruit: h.recruit || null, witness: !!h.witness,
@@ -65,7 +70,10 @@ function createSim(defs) {
         for (i = 0; i < M.cameras.length; i++) { var c = M.cameras[i]; S.cameras.push({ id: c.id, x: c.x, z: c.z, base: rad(c.facing), sweep: rad(c.sweep), period: c.period, facing: rad(c.facing), mountHeight: c.mountHeight, disabledUntil: 0, meter: 0, meterZombie: null, cooldownUntil: 0, view: T.cameraView }) }
         for (i = 0; i < M.lasers.length; i++) { var l = M.lasers[i]; S.lasers.push({ id: l.id, x1: l.x1, z1: l.z1, x2: l.x2, z2: l.z2, height: l.height, disabledUntil: 0, trippedAt: -10 }) }
         for (i = 0; i < M.panels.length; i++) { var p = M.panels[i]; S.panels.push({ id: p.id, x: p.x, z: p.z, facing: rad(p.facing || 0), links: p.links, label: p.label, usedUntil: 0, noticeAt: 0, noticed: true, mode: null }) }
-        for (i = 0; i < M.doors.length; i++) { var d = M.doors[i]; S.doors.push({ id: d.id, x: d.x, z: d.z, w: d.w, d: d.d, open: !!d.open, lockType: d.lockType || null, locked: !!d.lockType, label: d.label || "Door" }) }
+        for (i = 0; i < M.doors.length; i++) { var d = M.doors[i]; S.doors.push({ id: d.id, x: d.x, z: d.z, w: d.w, d: d.d, open: !!d.open, lockType: d.lockType || null, locked: !!d.lockType, sealed: !!d.sealed, asset: d.asset || null, label: d.label || "Door" }) }
+        S.controls = []; S.traversals = []; S.hazards = []
+        for (i = 0; i < (M.controls || []).length; i++) { var co2 = M.controls[i]; S.controls.push({ id: co2.id, kind: co2.kind || "switch", x: co2.x, z: co2.z, facing: rad(co2.facing || 0), label: co2.label || co2.kind, requires: co2.requires || null, fallback: co2.fallback || null, links: co2.links || [], asset: co2.asset || null, used: false, usedAt: -1, timed: co2.timed || 0, effect: co2.effect || "open" }) }
+        for (i = 0; i < (M.traversals || []).length; i++) { var tr = M.traversals[i]; S.traversals.push({ id: tr.id, kind: tr.kind || "vent", requires: tr.requires, from: tr.from, to: tr.to, label: tr.label || tr.kind || "passage", asset: tr.asset || null, duration: tr.duration || 1.5 }) }
         for (i = 0; i < M.props.length; i++) { var pr = M.props[i]; S.props.push({ id: pr.id, asset: pr.asset, x: pr.x, z: pr.z, w: pr.w, d: pr.d, facing: rad(pr.facing || 0), blocksSight: !!pr.blocksSight, movable: !!pr.movable, heavy: !!pr.heavy, hide: !!pr.hide, decor: !!pr.decor, label: pr.label || pr.id, occupant: null, placeholder: !!pr.placeholder }) }
         for (i = 0; i < M.pickups.length; i++) { var pk = M.pickups[i]; S.pickups.push({ id: pk.id, kind: pk.kind, x: pk.x, z: pk.z, label: pk.label || pk.kind, heldBy: null, flying: null, playingUntil: 0 }) }
         for (i = 0; i < M.collectibles.length; i++) { var co = M.collectibles[i]; S.collectibles.push({ id: co.id, asset: co.asset, x: co.x, z: co.z, label: co.label, taken: false }) }
@@ -212,7 +220,7 @@ function createSim(defs) {
     function stepActive(dt) {
         var zb = active(), ch = charOf(zb)
         zb.moving = false; zb.running = false; zb.sneaking = input.sneak; zb.pushing = false
-        if (zb.bite) return
+        if (zb.bite || zb.traversing) return
         if (S.time < zb.stunUntil) return
         var mx = input.x, mz = input.z, len = Math.hypot(mx, mz)
         if (len < 0.15) return
@@ -228,7 +236,7 @@ function createSim(defs) {
             if (!p.movable) continue
             var wouldHit = circleHitsRect(zb.x + dx, zb.z + dz, T.zombieRadius, p)
             if (!wouldHit) continue
-            if (p.heavy && !(ch.traits && ch.traits.heavyHands)) { S.message = { text: "Too heavy for " + ch.name, until: S.time + 1.5 }; continue }
+            if ((p.heavy && !(ch.traits && ch.traits.heavyHands)) || (ch.traits && ch.traits.noPush)) { S.message = { text: "Too heavy for " + ch.name, until: S.time + 1.5 }; continue }
             var pushSpeed = Math.min(speed, T.cartPushSpeed) * dt
             var px = Math.abs(mx) > Math.abs(mz) ? Math.sign(mx) * pushSpeed : 0, pz = Math.abs(mx) > Math.abs(mz) ? 0 : Math.sign(mz) * pushSpeed
             var moved = { x: p.x + px, z: p.z + pz, w: p.w, d: p.d }
@@ -256,7 +264,7 @@ function createSim(defs) {
             var zb = S.squad[i]
             if (zb === leader) continue
             zb.running = false; zb.sneaking = leader.sneaking; zb.moving = false
-            if (zb.mode !== "follow" || zb.hidden || S.time < zb.stunUntil || zb.bite) continue
+            if (zb.mode !== "follow" || zb.hidden || S.time < zb.stunUntil || zb.bite || zb.traversing) continue
             var d = dist(zb.x, zb.z, leader.x, leader.z)
             if (d < T.followDistance) { zb.path = []; continue }
             if (!zb.path || !zb.path.length || S.time - (zb.pathAt || -1) > 0.5) { zb.path = findPath(zb.x, zb.z, leader.x, leader.z); zb.pathAt = S.time }
@@ -272,7 +280,7 @@ function createSim(defs) {
         }
     }
     function unhide(zb) {   // step back out to where the zombie stood before hiding: the hiding spot itself blocks movement
-        if (!zb.hidden) return
+        if (!zb.hidden || zb.hidden === "__traversal") return
         var p = propById(zb.hidden); if (p) p.occupant = null
         zb.hidden = null
         if (zb.hideReturn && freeAt(zb.hideReturn.x, zb.hideReturn.z, T.zombieRadius)) { zb.x = zb.hideReturn.x; zb.z = zb.hideReturn.z }
@@ -308,9 +316,25 @@ function createSim(defs) {
         var held = null
         for (var i = 0; i < S.pickups.length; i++) if (S.pickups[i].heldBy === zb.id) held = S.pickups[i]
         if (held) out.push({ kind: "throw", text: "Throw " + held.label, target: held })
-        var d = nearest(S.doors, zb.x, zb.z, R + 0.2)
-        if (d) out.push(d.locked ? { kind: "unlock", text: (ch.ability && ch.ability.id === "unlock" ? "Unlock " : "Locked: ") + d.label, target: d, needs: "unlock" }
-                                 : { kind: "door", text: (d.open ? "Close " : "Open ") + d.label, target: d })
+        var d = nearest(S.doors, zb.x, zb.z, R + 0.2, function (dd) { return !dd.sealed })
+        if (d) {
+            if (d.locked) { var lk = LOCKS[d.lockType] || {}; out.push({ kind: "unlock", text: (canUnlock(ch, d.lockType) ? "Unlock " : "Locked: ") + d.label, target: d, needs: lk.ability || null }) }
+            else out.push({ kind: "door", text: (d.open ? "Close " : "Open ") + d.label, target: d })
+        }
+        var ctl = nearest(S.controls, zb.x, zb.z, R + 0.3, function (c) { return !c.used || c.timed })
+        if (ctl) {
+            var can = !ctl.requires || (ch.ability && ch.ability.id === ctl.requires) || (ch.traits && ch.traits[ctl.requires])
+            if (can) out.push({ kind: "control", text: (ctl.kind === "shutter" ? "Open " : "Use ") + ctl.label, target: ctl, needs: ctl.requires || null })
+            else if (ctl.fallback === "smash" && !(ch.traits && ch.traits.noSmash)) out.push({ kind: "controlSmash", text: "Smash " + ctl.label + " (alarm!)", target: ctl })
+            else out.push({ kind: "controlLocked", text: ctl.label + ": needs " + ctl.requires, target: ctl, needs: ctl.requires })
+        }
+        var tv = nearest(S.traversals.map(function (t) { return { x: t.from.x, z: t.from.z, t: t, end: "from" } }).concat(S.traversals.map(function (t) { return { x: t.to.x, z: t.to.z, t: t, end: "to" } })), zb.x, zb.z, R)
+        if (tv) {
+            var canT = (ch.ability && ch.ability.id === tv.t.requires) || (ch.traits && ch.traits[tv.t.requires])
+            out.push(canT ? { kind: "traverse", text: (tv.t.kind === "vault" ? "Vault over " : "Crawl through ") + tv.t.label, target: tv.t, end: tv.end, needs: tv.t.requires }
+                          : { kind: "traverseLocked", text: tv.t.label + ": needs " + tv.t.requires, target: tv.t, needs: tv.t.requires })
+        }
+        if (ch.ability && ch.ability.id === "bait" && !held && S.time >= (zb.baitReadyAt || 0)) out.push({ kind: "bait", text: "Throw food bait", target: zb, needs: "bait", low: true })
         var pk = nearest(S.pickups, zb.x, zb.z, R, function (p) { return !p.heldBy && !p.flying })
         if (pk && !held) out.push({ kind: "pickup", text: "Pick up " + pk.label, target: pk })
         var hp = nearest(S.props, zb.x, zb.z, R, function (p) { return p.hide && !p.occupant })
@@ -324,12 +348,18 @@ function createSim(defs) {
         if (hu) out.push({ kind: "bite", text: "Bite " + hu.label, target: hu })
         return out
     }
+    function pickCandidate(c) {   // the contextual action: anything specific beats the bite, the bite beats "low" ability offers
+        var pick = null
+        for (var i = 0; i < c.length; i++) if (c[i].kind !== "bite" && !c[i].low) { pick = c[i]; break }
+        if (!pick) for (i = 0; i < c.length; i++) if (c[i].kind === "bite") { pick = c[i]; break }
+        return pick || c[0]
+    }
     sim.prompt = function () {
         if (!S || S.phase !== "playing") return null
         var zb = active(); if (zb.hidden) return { kind: "unhide", text: "Leave hiding" }
+        if (zb.traversing) return null
         var c = candidates(zb); if (!c.length) return null
-        var pick = c[0]
-        for (var i = 0; i < c.length; i++) if (c[i].kind !== "bite") { pick = c[i]; break }
+        var pick = pickCandidate(c)
         return { kind: pick.kind, text: pick.text, needs: pick.needs || null, target: pick.target.id }
     }
     function perform(zb, c) {
@@ -337,8 +367,14 @@ function createSim(defs) {
         switch (c.kind) {
         case "door": t.open = !t.open; navDirty = true; emit("door", { x: t.x, z: t.z, open: t.open }); addNoise(t.x, t.z, 1.5, "door"); return true
         case "unlock":
-            if (ch.ability && ch.ability.id === "unlock") { t.locked = false; t.open = true; navDirty = true; emit("unlock", { x: t.x, z: t.z }); return true }
-            S.message = { text: t.label + " is locked (needs Master key)", until: S.time + 2 }; emit("locked", { x: t.x, z: t.z }); return false
+            if (canUnlock(ch, t.lockType)) { t.locked = false; t.open = true; navDirty = true; emit("unlock", { x: t.x, z: t.z }); return true }
+            S.message = { text: t.label + " is locked (needs " + lockLabel(t.lockType) + ")", until: S.time + 2 }; emit("locked", { x: t.x, z: t.z }); return false
+        case "control": useControl(t, zb, false); return true
+        case "controlSmash": useControl(t, zb, true); return true
+        case "controlLocked": S.message = { text: t.label + " needs " + t.requires, until: S.time + 2 }; emit("locked", { x: t.x, z: t.z }); return false
+        case "traverse": startTraverse(zb, t, c.end); return true
+        case "traverseLocked": S.message = { text: t.label + " needs " + t.requires, until: S.time + 2 }; return false
+        case "bait": throwBait(zb); return true
         case "pickup": t.heldBy = zb.id; emit("pickup", { x: t.x, z: t.z, item: t.id }); return true
         case "throw": throwPickup(zb, t); return true
         case "hide": zb.hidden = t.id; t.occupant = zb.id; zb.hideReturn = { x: zb.x, z: zb.z }; zb.x = t.x + t.w / 2; zb.z = t.z + t.d / 2; emit("hide", { x: zb.x, z: zb.z }); return true
@@ -356,6 +392,43 @@ function createSim(defs) {
         case "bite": startBite(zb, t); return true
         }
         return false
+    }
+    function useControl(ctl, zb, smashed) {
+        var ch = charOf(zb)
+        ctl.used = true; ctl.usedAt = S.time; ctl.smashed = !!smashed
+        for (var i = 0; i < ctl.links.length; i++) {
+            var id = ctl.links[i]
+            for (var k = 0; k < S.doors.length; k++) if (S.doors[k].id === id) { var d = S.doors[k]; d.open = ctl.effect !== "close"; d.locked = false; d.sealed = ctl.effect === "close" ? d.sealed : false; navDirty = true }
+            var l = laserById(id); if (l) l.disabledUntil = 1e9
+            var c = cameraById(id); if (c) { c.disabledUntil = 1e9; c.meter = 0 }
+            for (k = 0; k < (S.hazards || []).length; k++) if (S.hazards[k].id === id) S.hazards[k].active = false
+        }
+        for (i = 0; i < M.objectives.optional.length; i++) { var o = M.objectives.optional[i]; if (o.kind === "control" && o.target === ctl.id) S.objectives[o.id].done = true }
+        if (smashed) {
+            if (!(ch.traits && ch.traits.insulated)) { zb.stunUntil = S.time + T.smashZapStun; emit("zap", { x: zb.x, z: zb.z, zombie: zb.id }) }
+            raiseAlarm(ctl.x, ctl.z, "control"); emit("smash", { x: ctl.x, z: ctl.z, duration: 0 })
+        } else { addNoise(ctl.x, ctl.z, 1.5, "control"); emit("control", { x: ctl.x, z: ctl.z, id: ctl.id, kind: ctl.kind }) }
+        takeCheckpoint("control_" + ctl.id)
+    }
+    function startTraverse(zb, tr, end) {
+        var dest = end === "from" ? tr.to : tr.from
+        zb.traversing = { to: dest, left: tr.duration, id: tr.id }
+        zb.hidden = "__traversal"          // out of sight while inside the passage
+        emit("traverseStart", { x: zb.x, z: zb.z, id: tr.id })
+    }
+    function stepTraversals(dt) {
+        for (var i = 0; i < S.squad.length; i++) {
+            var zb = S.squad[i]; if (!zb.traversing) continue
+            zb.traversing.left -= dt
+            if (zb.traversing.left <= 0) { zb.x = zb.traversing.to.x; zb.z = zb.traversing.to.z; zb.hidden = null; emit("traverseEnd", { x: zb.x, z: zb.z, id: zb.traversing.id }); zb.traversing = null; if (S.active === i) input.x = input.z = 0 }
+        }
+    }
+    function throwBait(zb) {
+        var b = { id: "bait" + (nextId++), kind: "bait", x: zb.x, z: zb.z, label: "Food bait", heldBy: null, flying: null, playingUntil: 0, temporary: true }
+        S.pickups.push(b)
+        zb.baitReadyAt = S.time + (T.baitCooldown || 8)
+        throwPickup(zb, b)
+        emit("bait", { x: zb.x, z: zb.z, zombie: zb.id })
     }
     function setLinks(panel, until) {
         for (var i = 0; i < panel.links.length; i++) {
@@ -400,11 +473,10 @@ function createSim(defs) {
     sim.interact = function () {
         if (S.phase !== "playing") return false
         var zb = active(); if (zb.bite || S.time < zb.stunUntil) return false
+        if (zb.traversing) return false
         if (zb.hidden) { unhide(zb); return true }
         var c = candidates(zb); if (!c.length) return false
-        var pick = c[0]
-        for (var i = 0; i < c.length; i++) if (c[i].kind !== "bite") { pick = c[i]; break }
-        return perform(zb, pick)
+        return perform(zb, pickCandidate(c))
     }
     sim.bite = function () {
         if (S.phase !== "playing") return false
@@ -416,7 +488,7 @@ function createSim(defs) {
     }
     sim.ability = function () {
         if (S.phase !== "playing") return false
-        var zb = active(), ch = charOf(zb); if (zb.bite || zb.hidden || S.time < zb.stunUntil) return false
+        var zb = active(), ch = charOf(zb); if (zb.bite || zb.hidden || S.time < zb.stunUntil || zb.traversing) return false
         var id = ch.ability ? ch.ability.id : "bite"
         if (id === "bite") return sim.bite()
         var c = candidates(zb)
@@ -448,6 +520,8 @@ function createSim(defs) {
     function raiseAlarm(x, z, kind) {
         S.alarm = { x: x, z: z, kind: kind, until: S.time + T.alarmDuration }
         S.stats.alarms++
+        var so = S.objectives.stealth; if (so) so.failed = true      // "avoid full detection / a full alarm"
+
         for (var i = 0; i < S.humans.length; i++) {
             var h = S.humans[i]
             if (h.kind !== "guard" || h.bitten || h.state === "alert") continue
@@ -468,8 +542,10 @@ function createSim(defs) {
         var ch = charOf(zb), near = range * 0.3
         var rate = d <= near ? T.detectFillNear : T.detectFillNear + (T.detectFillFar - T.detectFillNear) * (d - near) / (range - near)
         if (zb.sneaking) rate *= T.sneakFactor
-        if (ch.traits && ch.traits.maintenance && h && d > T.maintenanceNear && zoneAt(zb.x, zb.z, "maintenance")) rate *= T.maintenanceFactor
+        var dz = ch.traits ? (ch.traits.disguiseZone || (ch.traits.maintenance ? "maintenance" : null)) : null
+        if (dz && h && d > T.maintenanceNear && zoneAt(zb.x, zb.z, dz)) rate *= T.maintenanceFactor          // looks like staff inside that kind of zone
         if (ch.traits && ch.traits.disguise && h && d > T.maintenanceNear) rate *= T.maintenanceFactor     // looks like staff from afar, anywhere
+        if (ch.traits && ch.traits.small) rate *= 0.75
         if (ch.traits && ch.traits.noisy && zb.moving) rate *= 1.3
         return rate
     }
@@ -496,12 +572,12 @@ function createSim(defs) {
     function stepGuard(h, dt) {
         var seen = updateMeter(h, dt, true)
         h.moving = false
-        var sp = T.guardSpeed
+        var sp = h.speedMulGuard && h.speedMulGuard !== 1 ? { patrol: T.guardSpeed.patrol * h.speedMulGuard, investigate: T.guardSpeed.investigate * h.speedMulGuard, alert: T.guardSpeed.alert * h.speedMulGuard, search: T.guardSpeed.search * h.speedMulGuard } : T.guardSpeed
         // hearing
         for (var n = 0; n < S.noises.length; n++) {
             var no = S.noises[n]
-            if (dist(h.x, h.z, no.x, no.z) <= no.radius && h.state !== "alert") {
-                var pr = no.kind === "radio" || no.kind === "crash" ? 1 : 0
+            if (dist(h.x, h.z, no.x, no.z) <= no.radius * (h.hearMul || 1) && h.state !== "alert") {
+                var pr = no.kind === "radio" || no.kind === "crash" || no.kind === "bait" || no.kind === "scream" ? 1 : 0
                 if (h.state !== "investigate" || h.priority <= pr) setInvestigate(h, no.x, no.z, pr)
                 if (h.state === "investigate" && !h.heardAt) emit("heard", { x: h.x, z: h.z, who: h.id })
                 h.heardAt = S.time
@@ -528,7 +604,7 @@ function createSim(defs) {
             if (h.lookLeft > 0) {
                 h.lookLeft -= dt; h.facing = norm(h.facing + 1.4 * dt)
                 var radioNear = false
-                for (var p = 0; p < S.pickups.length; p++) if (S.pickups[p].playingUntil > S.time && dist(S.pickups[p].x, S.pickups[p].z, h.x, h.z) < 2.5) radioNear = true
+                for (var p = 0; p < S.pickups.length; p++) if (S.pickups[p].playingUntil > S.time && dist(S.pickups[p].x, S.pickups[p].z, h.x, h.z) < 2.5) radioNear = true   // radio blaring, food bait being eaten
                 if (radioNear) h.lookLeft = Math.max(h.lookLeft, 0.5)
                 if (h.lookLeft <= 0) { h.state = "return"; h.path = []; h.priority = 0 }
                 break
@@ -628,6 +704,7 @@ function createSim(defs) {
         }
     }
     function stepPickups(dt) {
+        S.pickups = S.pickups.filter(function (p) { return !(p.temporary && !p.flying && p.playingUntil > 0 && S.time > p.playingUntil) })   // eaten bait vanishes
         for (var i = 0; i < S.pickups.length; i++) {
             var p = S.pickups[i]
             if (p.heldBy) { var zb = null; for (var k = 0; k < S.squad.length; k++) if (S.squad[k].id === p.heldBy) zb = S.squad[k]; if (zb) { p.x = zb.x; p.z = zb.z } continue }
@@ -635,7 +712,11 @@ function createSim(defs) {
                 p.flying.t += dt
                 var f = Math.min(1, p.flying.t / p.flying.duration)
                 p.x = p.flying.fromX + (p.flying.toX - p.flying.fromX) * f; p.z = p.flying.fromZ + (p.flying.toZ - p.flying.fromZ) * f
-                if (f >= 1) { p.flying = null; p.playingUntil = S.time + T.radioPlayTime; addNoise(p.x, p.z, T.radioNoise, "radio", p.id); emit("land", { x: p.x, z: p.z, item: p.id }) }
+                if (f >= 1) {
+                    p.flying = null
+                    if (p.kind === "bait") { p.playingUntil = S.time + (T.baitTime || 9); addNoise(p.x, p.z, T.baitNoise || 6, "bait", p.id); emit("baitLand", { x: p.x, z: p.z, item: p.id }) }
+                    else { p.playingUntil = S.time + T.radioPlayTime; addNoise(p.x, p.z, T.radioNoise, "radio", p.id); emit("land", { x: p.x, z: p.z, item: p.id }) }
+                }
             }
         }
     }
@@ -709,7 +790,8 @@ function createSim(defs) {
             if (zb.bite) { zb.bite.left -= dt; if (zb.bite.left <= 0) finishBite(zb) }
         }
         for (i = 0; i < S.humans.length; i++) if (S.humans[i].removed) { S.humans = S.humans.filter(function (h) { return !h.removed }); break }
-        for (i = 0; i < S.humans.length; i++) { var h = S.humans[i]; if (h.kind === "guard" && !h.bitten) stepGuard(h, dt); else stepCivilian(h, dt) }
+        for (i = 0; i < S.humans.length; i++) { var h = S.humans[i]; if ((h.kind === "guard" || h.kind === "dog") && !h.bitten) stepGuard(h, dt); else stepCivilian(h, dt) }
+        stepTraversals(dt)
         for (i = 0; i < S.noises.length; i++) S.noises[i].processed = true    // noises raised later this step are heard next step
         for (i = 0; i < S.cameras.length; i++) stepCamera(S.cameras[i], dt)
         for (i = 0; i < S.lasers.length; i++) stepLaser(S.lasers[i])
@@ -729,6 +811,7 @@ function createSim(defs) {
     sim.character = function (zb) { return charOf(zb) }
     sim.isLaserActive = function (l) { return S.time >= l.disabledUntil }
     sim.isCameraActive = function (c) { return S.time >= c.disabledUntil }
+    sim.canUnlock = canUnlock
     sim.reset()
     return sim
 }

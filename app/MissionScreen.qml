@@ -1,7 +1,7 @@
 // Mission select: every campaign mission in order - completed (rating, best time, optionals), available, or locked
 // with the reason - plus the location on a turntable and the capturable characters as previews / silhouettes.
 import QtQuick
-import "config/missions.js" as Missions
+import "config/campaign.js" as Missions
 import "config/characters.js" as Characters
 
 Item {

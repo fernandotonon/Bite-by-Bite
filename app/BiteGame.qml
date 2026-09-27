@@ -3,7 +3,7 @@
 import QtQuick
 import "scripts/Sim.js" as SimJs
 import "config/characters.js" as Characters
-import "config/missions.js" as Missions
+import "config/campaign.js" as Missions
 import "config/tuning.js" as Tuning
 
 FocusScope {
@@ -49,6 +49,8 @@ FocusScope {
     Component.onCompleted: {
         save.load(); forceActiveFocus(); attachGamepad(); input.touch = touch
         Qt.callLater(function () { console.log("BiteByBite: save backend", save.backend, "unlocked", JSON.stringify(save.progress.unlocked), "models", !noModels) })
+        var mArg = appArgs.filter(function (a) { return a.indexOf("--mission=") === 0 })[0]
+        if (mArg) missionId = mArg.substring(10)
         if (appArgs.indexOf("--autostart") >= 0) debugStart()
     }
 
@@ -75,7 +77,7 @@ FocusScope {
         screen = "results"
     }
     function abandonMission() { screen = "title"; sim = null; level.sim = null; hud.sim = null }
-    function debugStart() { startMission(["standard"]) }
+    function debugStart(missionIdArg, squadIds) { if (missionIdArg) missionId = missionIdArg; startMission(squadIds || ["standard"]) }
     function debugInfo() {
         var S = sim ? sim.state : null
         return { screen: screen, phase: S ? S.phase : "", time: S ? S.elapsed : 0, active: S ? S.active : -1,
@@ -146,6 +148,11 @@ FocusScope {
             case "switch": audio.play("switch"); break
             case "command": audio.play("command"); hud.toast = e.mode === "stay" ? "Squad: stay here" : "Squad: follow me"; hud.toastUntil = sim.state.elapsed + 1.5; break
             case "noTarget": audio.play("locked"); break
+            case "control": audio.play("unlock"); hud.toast = (e.kind === "shutter" ? "Shutter opening" : "Control activated"); hud.toastUntil = sim.state.elapsed + 2; break
+            case "bait": audio.play("throw"); break
+            case "baitLand": audio.play("land"); level.addFx(e.x, e.z, "noise"); break
+            case "traverseStart": audio.play("hide"); break
+            case "traverseEnd": audio.play("hide"); level.snapCamera(); break
             }
         }
     }
