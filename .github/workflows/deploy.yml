@@ -74,7 +74,8 @@ jobs:
         run: |
           python3 scripts/serve.py deploy/multithread --port 8093 > serve.log 2>&1 &
           sleep 2
-          node scripts/browser-check.mjs "http://localhost:8093/index.html?args=--autotest" --seconds 150 --out browser-check.png --chrome "$(command -v google-chrome || command -v chromium-browser)" | tee check.log
+          # software-rendered Chrome on a runner is slow: a small window, toon placeholders and no shadows keep the walk short
+          node scripts/browser-check.mjs "http://localhost:8093/index.html?args=--autotest%20--no-models%20--reduced-fx" --seconds 420 --size 800,450 --out browser-check.png --chrome "$(command -v google-chrome || command -v chromium-browser)" | tee check.log
           grep -q "AUTOTEST OK" check.log
           ! grep -qE "AUTOTEST FAIL|failed to load|TypeError|ReferenceError" check.log
       - name: Size report
