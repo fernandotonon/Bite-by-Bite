@@ -33,6 +33,11 @@ Item {
                 key(Qt.Key_E); game.tick(1 / 60)
                 console.log("autotest: door open?", game.sim.state.doors[0].open, "prompt", JSON.stringify(game.sim.prompt()))
                 key(Qt.Key_Tab); key(Qt.Key_H); key(Qt.Key_Q); key(Qt.Key_F); game.tick(1 / 60)
+                // the squad strip: tapping / clicking the first card takes control of that zombie
+                var was = game.sim.state.active
+                var hit = game.hudSquadTap(16 + 60, 14 + 20)
+                console.log("autotest: squad card tap", hit, "active", was, "->", game.sim.state.active)
+                if (!hit || game.sim.state.active !== 0) console.log("AUTOTEST FAIL: squad card tap")
                 key(Qt.Key_Escape); console.log("autotest: paused", game.screen); if (game.screen !== "paused") console.log("AUTOTEST FAIL: pause")
                 key(Qt.Key_Escape); console.log("autotest: resumed", game.screen); if (game.screen !== "playing") console.log("AUTOTEST FAIL: resume")
                 // force a win to instantiate the results screen and exercise persistence
