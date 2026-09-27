@@ -60,7 +60,7 @@ function createSim(defs) {
             walls: clone(M.walls), noises: [], alarm: null,
             checkpoint: null, checkpointsTaken: {},
             stats: { fullAlerts: 0, bites: 0, restarts: 0, alarms: 0 },
-            objectives: {}, recruited: [], collected: [], tutorialSeen: {}, exitHold: 0, message: null
+            objectives: {}, recruited: [], collected: [], tutorialSeen: {}, exitHold: 0, message: null, abilityUses: {}
         }
         for (var i = 0; i < defs.squad.length; i++) {
             var off = i === 0 ? 0 : (i % 2 ? 1 : -1) * 0.9 * Math.ceil(i / 2)
@@ -219,18 +219,29 @@ function createSim(defs) {
     // ---- zombies ------------------------------------------------------------------------------------
     function active() { return S.squad[S.active] }
     function zoneAt(x, z, kind) { for (var i = 0; i < S.zones.length; i++) if (S.zones[i].kind === kind && inRect(x, z, S.zones[i])) return S.zones[i]; return null }
-    function addNoise(x, z, radius, kind, source) { if (radius <= 0) return; S.noises.push({ x: x, z: z, radius: radius, kind: kind, time: S.time, source: source || null }); emit("noise", { x: x, z: z, radius: radius, kind: kind }) }
+    function addNoise(x, z, radius, kind, source) {
+        if (radius <= 0) return
+        S.noises.push({ x: x, z: z, radius: radius, kind: kind, time: S.time, source: source || null }); emit("noise", { x: x, z: z, radius: radius, kind: kind })
+        var sonic = hazardAt(x, z, "sonic")                      // live microphones: any noise here is on the studio speakers
+        if (sonic && kind !== "door" && kind !== "control" && S.time - (sonic.trippedAt || -10) > 3) {
+            sonic.trippedAt = S.time
+            raiseAlarm(x, z, "sonic")
+            for (var i = 0; i < S.squad.length; i++) { var q = S.squad[i], cq = charOf(q); if (inRect(q.x, q.z, sonic) && !(cq.traits && cq.traits.sonicProof)) q.stunUntil = Math.max(q.stunUntil, S.time + (T.sonicStun || 1.5)) }
+            emit("sonicAlarm", { x: x, z: z })
+        }
+    }
 
     function stepActive(dt) {
         var zb = active(), ch = charOf(zb)
-        zb.moving = false; zb.running = false; zb.sneaking = input.sneak; zb.pushing = false
+        var hoarse = S.time < (zb.hoarseUntil || 0)
+        zb.moving = false; zb.running = false; zb.sneaking = input.sneak && !hoarse; zb.pushing = false
         if (zb.bite || zb.traversing) return
         if (S.time < zb.stunUntil) return
         var mx = input.x, mz = input.z, len = Math.hypot(mx, mz)
         if (len < 0.15) return
         if (zb.hidden) { unhide(zb) }
         if (len > 1) { mx /= len; mz /= len }
-        var speed = input.sneak ? ch.speed.sneak : (input.run ? ch.speed.run : ch.speed.walk)
+        var speed = zb.sneaking ? ch.speed.sneak : (input.run ? ch.speed.run : ch.speed.walk)
         if (!(ch.traits && ch.traits.fireproof) && hazardAt(zb.x, zb.z, "smoke")) {   // coughing in the smoke: slow, noisy, stunned now and then
             speed *= T.smokeSlow || 0.6
             if (S.time - (zb.coughAt || -10) > (T.coughEvery || 2.5)) { zb.coughAt = S.time; zb.stunUntil = S.time + (T.coughStun || 0.8); addNoise(zb.x, zb.z, T.coughNoise || 4, "cough", zb.id); emit("cough", { x: zb.x, z: zb.z, zombie: zb.id }) }
@@ -259,7 +270,8 @@ function createSim(defs) {
         zb.moving = dist(before.x, before.z, zb.x, zb.z) > 1e-5
         zb.speed = zb.moving ? speed : 0
         if (zb.moving) {
-            var noiseR = zb.running ? ch.noise.run : (input.sneak ? 0 : ch.noise.walk)
+            var noiseR = zb.running ? ch.noise.run : (zb.sneaking ? 0 : ch.noise.walk)
+            if (hoarse) noiseR = Math.max(noiseR, 2.5)             // wheezing after the scream
             if (ch.traits && ch.traits.quiet) noiseR *= 0.5
             if (noiseR > 0 && S.time - zb.lastNoise > 0.6) { addNoise(zb.x, zb.z, noiseR * T.hearRange, "steps", zb.id); zb.lastNoise = S.time }
         }
@@ -343,6 +355,7 @@ function createSim(defs) {
                           : { kind: "traverseLocked", text: tv.t.label + ": needs " + tv.t.requires, target: tv.t, needs: tv.t.requires })
         }
         if (ch.ability && ch.ability.id === "bait" && !held && S.time >= (zb.baitReadyAt || 0)) out.push({ kind: "bait", text: "Throw food bait", target: zb, needs: "bait", low: true })
+        if (ch.ability && ch.ability.id === "scream" && S.time >= (zb.screamReadyAt || 0)) out.push({ kind: "scream", text: "SCREAM", target: zb, needs: "scream", low: true })
         var pk = nearest(S.pickups, zb.x, zb.z, R, function (p) { return !p.heldBy && !p.flying })
         if (pk && !held) out.push({ kind: "pickup", text: "Pick up " + pk.label, target: pk })
         var hp = nearest(S.props, zb.x, zb.z, R, function (p) { return p.hide && !p.occupant })
@@ -383,6 +396,7 @@ function createSim(defs) {
         case "traverse": startTraverse(zb, t, c.end); return true
         case "traverseLocked": S.message = { text: t.label + " needs " + t.requires, until: S.time + 2 }; return false
         case "bait": throwBait(zb); return true
+        case "scream": scream(zb); return true
         case "pickup": t.heldBy = zb.id; emit("pickup", { x: t.x, z: t.z, item: t.id }); return true
         case "throw": throwPickup(zb, t); return true
         case "hide": zb.hidden = t.id; t.occupant = zb.id; zb.hideReturn = { x: zb.x, z: zb.z }; zb.x = t.x + t.w / 2; zb.z = t.z + t.d / 2; emit("hide", { x: zb.x, z: zb.z }); return true
@@ -454,6 +468,24 @@ function createSim(defs) {
             zb.traversing.left -= dt
             if (zb.traversing.left <= 0) { zb.x = zb.traversing.to.x; zb.z = zb.traversing.to.z; zb.hidden = null; emit("traverseEnd", { x: zb.x, z: zb.z, id: zb.traversing.id }); zb.traversing = null; if (S.active === i) input.x = input.z = 0 }
         }
+    }
+    function scream(zb) {
+        var reach = T.screamReach || 4, radius = T.screamNoise || 11
+        var nx = zb.x + Math.sin(zb.facing) * reach, nz = zb.z + Math.cos(zb.facing) * reach      // directed: the noise lands ahead of her
+        nx = Math.max(0.5, Math.min(M.size.w - 0.5, nx)); nz = Math.max(0.5, Math.min(M.size.d - 0.5, nz))
+        addNoise(nx, nz, radius, "scream", zb.id)
+        for (var i = 0; i < S.humans.length; i++) {           // civilians nearby freeze for a moment
+            var h = S.humans[i]
+            if (h.kind === "civilian" && !h.bitten && dist(h.x, h.z, zb.x, zb.z) <= radius) { h.interruptedUntil = S.time + (T.interruptTime || 3); h.meter = 0; h.path = [] }
+        }
+        zb.screamReadyAt = S.time + (T.screamCooldown || 10)
+        zb.hoarseUntil = S.time + (T.hoarseTime || 4)
+        noteAbility("scream")
+        emit("screamAbility", { x: zb.x, z: zb.z, toX: nx, toZ: nz, zombie: zb.id })
+    }
+    function noteAbility(id) {
+        S.abilityUses[id] = (S.abilityUses[id] || 0) + 1
+        for (var i = 0; i < M.objectives.optional.length; i++) { var o = M.objectives.optional[i]; if (o.kind === "ability" && o.target === id) S.objectives[o.id].done = true }
     }
     function throwBait(zb) {
         var b = { id: "bait" + (nextId++), kind: "bait", x: zb.x, z: zb.z, label: "Food bait", heldBy: null, flying: null, playingUntil: 0, temporary: true }
@@ -695,6 +727,7 @@ function createSim(defs) {
     function stepCivilian(h, dt) {
         h.moving = false
         if (h.state === "turned") { h.facing = norm(h.facing + 0.3 * dt); return }
+        if (h.interruptedUntil && S.time < h.interruptedUntil) return       // frozen by a scream
         if (h.witness) {
             var seen = updateMeter(h, dt, true)
             if (h.meter >= 1 && !h.alarmed) { h.alarmed = true; h.alarmUntil = S.time + 4; addNoise(h.x, h.z, 9, "scream", h.id); raiseAlarm(seen ? seen.x : h.x, seen ? seen.z : h.z, "scream"); emit("scream", { x: h.x, z: h.z, who: h.id }) }

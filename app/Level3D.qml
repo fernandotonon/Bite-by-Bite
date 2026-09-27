@@ -134,8 +134,8 @@ Item {
                 readonly property bool active: { level.stateVersion; return level.st.hazards[index].active }
                 visible: active
                 x: (hz.x + hz.w / 2) * 100; z: (hz.z + hz.d / 2) * 100
-                Box3D { y: 0; width: hz.w * 100; height: hz.kind === "fire" ? 40 + Math.sin(level.simTime * 9 + index) * 10 : 120; depth: hz.d * 100
-                        color: hz.kind === "fire" ? "#ff7a2f" : "#8a8f96"; lighting: 0; showEdges: false; castsShadows: false; opacity: hz.kind === "fire" ? 0.55 : 0.5 }
+                Box3D { y: 0; width: hz.w * 100; height: hz.kind === "fire" ? 40 + Math.sin(level.simTime * 9 + index) * 10 : (hz.kind === "sonic" ? 1.2 : 120); depth: hz.d * 100
+                        color: hz.kind === "fire" ? "#ff7a2f" : (hz.kind === "sonic" ? "#c84fd6" : "#8a8f96"); lighting: 0; showEdges: hz.kind === "sonic"; edgeColor: "#ffffff"; castsShadows: false; opacity: hz.kind === "fire" ? 0.55 : (hz.kind === "sonic" ? 0.22 : 0.5) }
                 Repeater3D { model: hz.kind === "fire" ? Math.min(6, Math.ceil(hz.w * hz.d / 4)) : 0
                     delegate: Box3D { required property int index; readonly property real t: level.simTime * 6 + index * 1.3
                         x: Math.sin(index * 2.1) * hz.w * 35; z: Math.cos(index * 1.7) * hz.d * 35; y: 30 + Math.abs(Math.sin(t)) * 50

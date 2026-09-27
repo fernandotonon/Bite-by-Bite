@@ -50,5 +50,7 @@ var tuning = {
     baitCooldown: 8, baitTime: 9, baitNoise: 7.0,
     dogView: { angle: 130, range: 3.5 }, dogHearing: 1.8, dogSpeed: 1.5,
     // firehouse: smoke (non-fireproof zombies cough)
-    smokeSlow: 0.6, coughEvery: 2.5, coughStun: 0.8, coughNoise: 4
+    smokeSlow: 0.6, coughEvery: 2.5, coughStun: 0.8, coughNoise: 4,
+    // studio: the scream and the live-microphone zones
+    screamReach: 4, screamNoise: 11, screamCooldown: 10, hoarseTime: 4, interruptTime: 3, sonicStun: 1.5
 }
