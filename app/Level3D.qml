@@ -125,6 +125,24 @@ Item {
                 useToonShading: true; showEdges: false; castsShadows: false
             }
         }
+        // hazards: fire (flickering orange slabs + light) and smoke (grey haze); gone when a control shuts them off
+        Repeater3D {
+            model: level.st ? level.st.hazards.length : 0
+            delegate: Node {
+                required property int index
+                readonly property var hz: level.st.hazards[index]
+                readonly property bool active: { level.stateVersion; return level.st.hazards[index].active }
+                visible: active
+                x: (hz.x + hz.w / 2) * 100; z: (hz.z + hz.d / 2) * 100
+                Box3D { y: 0; width: hz.w * 100; height: hz.kind === "fire" ? 40 + Math.sin(level.simTime * 9 + index) * 10 : 120; depth: hz.d * 100
+                        color: hz.kind === "fire" ? "#ff7a2f" : "#8a8f96"; lighting: 0; showEdges: false; castsShadows: false; opacity: hz.kind === "fire" ? 0.55 : 0.5 }
+                Repeater3D { model: hz.kind === "fire" ? Math.min(6, Math.ceil(hz.w * hz.d / 4)) : 0
+                    delegate: Box3D { required property int index; readonly property real t: level.simTime * 6 + index * 1.3
+                        x: Math.sin(index * 2.1) * hz.w * 35; z: Math.cos(index * 1.7) * hz.d * 35; y: 30 + Math.abs(Math.sin(t)) * 50
+                        width: 24 + Math.sin(t * 1.3) * 8; height: 60 + Math.sin(t) * 25; depth: 24; color: index % 2 ? "#ffc531" : "#ff4a1f"; lighting: 0; showEdges: false; castsShadows: false; opacity: 0.8 } }
+                PointLight { visible: hz.kind === "fire"; y: 90; color: "#ff8a3a"; brightness: 1.2 + Math.sin(level.simTime * 11) * 0.4; castsShadow: false }
+            }
+        }
         // controls (consoles, shutter switches, valves, terminals...): a prop with a status light
         Repeater3D {
             model: level.st ? level.st.controls.length : 0

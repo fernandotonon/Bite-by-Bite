@@ -72,6 +72,7 @@ function createSim(defs) {
         for (i = 0; i < M.panels.length; i++) { var p = M.panels[i]; S.panels.push({ id: p.id, x: p.x, z: p.z, facing: rad(p.facing || 0), links: p.links, label: p.label, usedUntil: 0, noticeAt: 0, noticed: true, mode: null }) }
         for (i = 0; i < M.doors.length; i++) { var d = M.doors[i]; S.doors.push({ id: d.id, x: d.x, z: d.z, w: d.w, d: d.d, open: !!d.open, lockType: d.lockType || null, locked: !!d.lockType, sealed: !!d.sealed || !!(d.openedBy && d.openedBy.length), openedBy: d.openedBy || null, asset: d.asset || null, label: d.label || "Door" }) }
         S.controls = []; S.traversals = []; S.hazards = []
+        for (i = 0; i < (M.hazards || []).length; i++) { var hz = M.hazards[i]; S.hazards.push({ id: hz.id, kind: hz.kind, x: hz.x, z: hz.z, w: hz.w, d: hz.d, active: hz.active !== false, label: hz.label || hz.kind }) }
         for (i = 0; i < (M.controls || []).length; i++) { var co2 = M.controls[i]; S.controls.push({ id: co2.id, kind: co2.kind || "switch", x: co2.x, z: co2.z, facing: rad(co2.facing || 0), label: co2.label || co2.kind, requires: co2.requires || null, fallback: co2.fallback || null, links: co2.links || [], asset: co2.asset || null, used: false, usedAt: -1, timed: co2.timed || 0, effect: co2.effect || "open" }) }
         for (i = 0; i < (M.traversals || []).length; i++) { var tr = M.traversals[i]; S.traversals.push({ id: tr.id, kind: tr.kind || "vent", requires: tr.requires, from: tr.from, to: tr.to, label: tr.label || tr.kind || "passage", asset: tr.asset || null, duration: tr.duration || 1.5 }) }
         for (i = 0; i < M.props.length; i++) { var pr = M.props[i]; S.props.push({ id: pr.id, asset: pr.asset, x: pr.x, z: pr.z, w: pr.w, d: pr.d, facing: rad(pr.facing || 0), blocksSight: !!pr.blocksSight, movable: !!pr.movable, heavy: !!pr.heavy, hide: !!pr.hide, decor: !!pr.decor, label: pr.label || pr.id, occupant: null, placeholder: !!pr.placeholder }) }
@@ -123,16 +124,18 @@ function createSim(defs) {
         var cx = Math.max(rc.x, Math.min(x, rc.x + rc.w)), cz = Math.max(rc.z, Math.min(z, rc.z + rc.d))
         return (x - cx) * (x - cx) + (z - cz) * (z - cz) < r * r
     }
-    function freeAt(x, z, r, ignore) {
+    function freeAt(x, z, r, ignore, fireproof) {
         if (x < r || z < r || x > M.size.w - r || z > M.size.d - r) return false
         var bl = blockers(false)
         for (var i = 0; i < bl.length; i++) { if (bl[i] === ignore) continue; if (circleHitsRect(x, z, r, bl[i])) return false }
+        if (!fireproof) for (i = 0; i < S.hazards.length; i++) { var hz = S.hazards[i]; if (hz.active && hz.kind === "fire" && circleHitsRect(x, z, r, hz)) return false }
         return true
     }
+    function hazardAt(x, z, kind) { for (var i = 0; i < S.hazards.length; i++) { var hz = S.hazards[i]; if (hz.active && hz.kind === kind && inRect(x, z, hz)) return hz } return null }
     function moveCircle(ent, dx, dz, r, ignore) {   // axis-separated slide
-        var moved = false
-        if (dx !== 0 && freeAt(ent.x + dx, ent.z, r, ignore)) { ent.x += dx; moved = true }
-        if (dz !== 0 && freeAt(ent.x, ent.z + dz, r, ignore)) { ent.z += dz; moved = true }
+        var moved = false, fp = !!(ent.charId && CH[ent.charId].traits && CH[ent.charId].traits.fireproof)
+        if (dx !== 0 && freeAt(ent.x + dx, ent.z, r, ignore, fp)) { ent.x += dx; moved = true }
+        if (dz !== 0 && freeAt(ent.x, ent.z + dz, r, ignore, fp)) { ent.z += dz; moved = true }
         return moved
     }
     // navigation grid for guards and followers (rebuilt when doors / walls / props change)
@@ -143,6 +146,7 @@ function createSim(defs) {
         for (var j = 0; j < D; j++) for (var i = 0; i < W; i++) {
             var x = (i + 0.5) * g, z = (j + 0.5) * g, b = x < 0.4 || z < 0.4 || x > M.size.w - 0.4 || z > M.size.d - 0.4
             for (var k = 0; k < bl.length && !b; k++) if (circleHitsRect(x, z, 0.38, bl[k])) b = true
+            if (!b && hazardAt(x, z, "fire")) b = true
             blocked[j * W + i] = b
         }
         nav = { g: g, W: W, D: D, blocked: blocked }
@@ -227,6 +231,10 @@ function createSim(defs) {
         if (zb.hidden) { unhide(zb) }
         if (len > 1) { mx /= len; mz /= len }
         var speed = input.sneak ? ch.speed.sneak : (input.run ? ch.speed.run : ch.speed.walk)
+        if (!(ch.traits && ch.traits.fireproof) && hazardAt(zb.x, zb.z, "smoke")) {   // coughing in the smoke: slow, noisy, stunned now and then
+            speed *= T.smokeSlow || 0.6
+            if (S.time - (zb.coughAt || -10) > (T.coughEvery || 2.5)) { zb.coughAt = S.time; zb.stunUntil = S.time + (T.coughStun || 0.8); addNoise(zb.x, zb.z, T.coughNoise || 4, "cough", zb.id); emit("cough", { x: zb.x, z: zb.z, zombie: zb.id }) }
+        }
         zb.running = !!input.run && !input.sneak
         zb.facing = Math.atan2(mx, mz)
         var dx = mx * speed * dt, dz = mz * speed * dt
@@ -401,7 +409,7 @@ function createSim(defs) {
             for (var k = 0; k < S.doors.length; k++) if (S.doors[k].id === id && !S.doors[k].openedBy) { var d = S.doors[k]; d.open = ctl.effect !== "close"; d.locked = false; if (!ctl.timed) d.sealed = ctl.effect === "close" ? d.sealed : false; navDirty = true }
             var l = laserById(id); if (l) l.disabledUntil = 1e9
             var c = cameraById(id); if (c) { c.disabledUntil = 1e9; c.meter = 0 }
-            for (k = 0; k < (S.hazards || []).length; k++) if (S.hazards[k].id === id) S.hazards[k].active = false
+            for (k = 0; k < (S.hazards || []).length; k++) if (S.hazards[k].id === id && S.hazards[k].active) { S.hazards[k].active = false; navDirty = true; emit("hazardOff", { x: S.hazards[k].x + S.hazards[k].w / 2, z: S.hazards[k].z + S.hazards[k].d / 2, kind: S.hazards[k].kind }) }
         }
         if (ctl.timed) ctl.closesAt = S.time + ctl.timed
         for (i = 0; i < M.objectives.optional.length; i++) { var o = M.objectives.optional[i]; if (o.kind === "control" && o.target === ctl.id) S.objectives[o.id].done = true }
@@ -842,6 +850,7 @@ function createSim(defs) {
     sim.isCameraActive = function (c) { return S.time >= c.disabledUntil }
     sim.canUnlock = canUnlock
     sim.controlActive = controlActive
+    sim.hazardAt = hazardAt
     sim.reset()
     return sim
 }

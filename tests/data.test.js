@@ -57,6 +57,7 @@ for (const m of Mi.missions) test("mission " + m.id + ": layout and references a
         if (o.kind === "collectible") assert.ok(m.collectibles.find(c => c.id === o.target), "collectible " + o.target)
         if (o.kind === "control") assert.ok((m.controls || []).find(c => c.id === o.target), "control objective " + o.target)
     }
+    for (const h of (m.hazards || [])) assert.ok(["fire", "smoke"].includes(h.kind) && h.w > 0 && h.d > 0 && inBounds(m, h), "hazard " + h.id)
     if (m.location) assert.ok(As.get(m.location), "location asset " + m.location)
     for (const r of (m.recruits || [])) assert.ok(Ch.get(r), "recruit preview " + r)
 })

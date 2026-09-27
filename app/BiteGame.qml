@@ -153,6 +153,10 @@ FocusScope {
             case "baitLand": audio.play("land"); level.addFx(e.x, e.z, "noise"); break
             case "traverseStart": audio.play("hide"); break
             case "traverseEnd": audio.play("hide"); level.snapCamera(); break
+            case "cough": audio.play("step"); level.addFx(e.x, e.z, "noise"); break
+            case "hazardOff": audio.play("sabotage"); level.addFx(e.x, e.z, "noise"); hud.toast = e.kind === "fire" ? "Fire out" : "Smoke clearing"; hud.toastUntil = sim.state.elapsed + 2; break
+            case "controlExpired": audio.play("locked"); break
+            case "doorClosed": audio.play("door"); break
             }
         }
     }
