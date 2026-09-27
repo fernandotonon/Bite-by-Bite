@@ -98,12 +98,16 @@ Flags: `--no-models` (toon placeholders only), `--autostart` (skip the menus), `
 | ![title](docs/screenshots/title.png) | ![corridor](docs/screenshots/level-corridor.png) |
 | ![nurse station](docs/screenshots/level-nurse-station.png) | ![maintenance](docs/screenshots/level-maintenance.png) |
 | ![deck](docs/screenshots/horde-deck.png) | ![results](docs/screenshots/results.png) |
+| ![outbreaks](docs/screenshots/outbreaks.png) | ![mall](docs/screenshots/level-mall.png) |
+| ![school](docs/screenshots/level-school.png) | ![office](docs/screenshots/level-office.png) |
+| ![firehouse](docs/screenshots/level-fire.png) | ![studio](docs/screenshots/level-studio.png) |
+| ![lab](docs/screenshots/level-lab.png) | |
 
 ## Status
 
 Seven-mission campaign with local persistence (Clayground `KeyValueStore`). The hospital's 19 assets and the roster's
 22 (zombies, humans, doors, ambulance, props) are generated (11 with the `balanced` TRELLIS preset, 8 props fell back to `fast` after the balanced cascade stalled -
 see `docs/asset-pipeline.md`); the six humanoids are rigged with Idle / Walk / Run / Bite clips.
-PLACEHOLDERS still in use: synthesized audio cues (`scripts/gen-audio.py`), the ambulance (toon box), the human
-electrician (tinted zombie model), deck portraits (drawn silhouettes). Every other asset is generated from the
-concept art in `docs/concept/`.
+PLACEHOLDERS still in use: synthesized audio cues (`scripts/gen-audio.py`), the guard dog, the food bait, the
+firehouse ventilation fan (its generation failed twice), deck portraits (drawn silhouettes). Every other asset -
+71 models - is generated from the concept art in `docs/concept/`.
