@@ -156,8 +156,8 @@ Node {
 
     // Nodes:
     Node {
-        id: a7
-        objectName: "a7"
+        id: guard_rigged
+        objectName: "guard_rigged"
         Node {
             id: guard_trim
             objectName: "guard_trim"
@@ -423,8 +423,8 @@ Node {
             }
         }
         Model {
-            id: a7_mesh
-            objectName: "a7_mesh"
+            id: guard_rigged_mesh
+            objectName: "guard_rigged_mesh"
             source: "meshes/meshes_0__mesh.mesh"
             skin: skin
             materials: [
@@ -541,13 +541,13 @@ Node {
         objectName: "Idle"
         property real framesPerSecond: 1000
         startFrame: 0
-        endFrame: 2967
+        endFrame: 1834
         currentFrame: 0
         enabled: node.clip === "Idle"
         animations: TimelineAnimation {
-            duration: 2967
+            duration: 1834
             from: 0
-            to: 2967
+            to: 1834
             running: node.clip === "Idle"
             loops: Animation.Infinite
         }
@@ -560,6 +560,11 @@ Node {
             target: leftFoot
             property: "rotation"
             keyframeSource: "animations/leftFoot_rotation_1.qad"
+        }
+        KeyframeGroup {
+            target: neck
+            property: "rotation"
+            keyframeSource: "animations/neck_rotation_1.qad"
         }
         KeyframeGroup {
             target: rightLeg
