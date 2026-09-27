@@ -58,3 +58,25 @@ settings = { volume, muted, showTutorial, showCones }
 1. Add an entry to `characters.js` with `capturable: true` and an `asset` id in `assets.js`.
 2. If it needs a new verb, add an ability id or trait to `Sim.js` (`perform()` / `candidates()` / `fillRate()`).
 3. Put a human with `recruit: "<id>"` into a mission; the results screen and the deck pick it up from `save.progress`.
+
+## The campaign (generic mechanics added for missions 2-7)
+
+Every mechanic is data the simulation understands generically; no mission id appears in `Sim.js`.
+
+| Data | Where | What the sim does |
+|---|---|---|
+| `doors[].lockType` maintenance / security / medical | `LOCKS` in Sim.js | opened by an ability (`unlock`, `securityAccess`) or a trait (`medicalAccess`) |
+| `doors[].sealed`, `doors[].openedBy: [controls]`, `doors[].asset` | Level3D slides sealed leaves up | sealed doors open only through controls; `openedBy` needs every listed control active at once |
+| `controls[]` (`requires`, `fallback: "smash"`, `links`, `timed`, `releases`) | consoles, valves, switches, terminals | `links` open doors / disable cameras, lasers, hazards; `timed` controls expire; `releases` frees a captive |
+| `traversals[]` (`requires: crawl / vault`, `from`, `to`) | vent hatches / bleachers | the zombie disappears for `duration` and reappears at the other end |
+| `hazards[]` fire / smoke / sonic | fire slabs, haze, mic zones | fire blocks unless `fireproof`; smoke slows and makes non-fireproof zombies cough; sonic zones turn any noise into an alarm + stun unless `sonicProof` |
+| `zones[].kind` kitchen / security / office (+ maintenance) | tinted floors | `disguiseZone` trait: slower detection from afar inside that zone |
+| `zones[].requires: [controls]` on the exit | HUD hint | the exit does not count before those controls were used |
+| `humans[].kind: "dog"` / `"captive"` | placeholder dog / caged zombie | dogs: fast, hear ×1.8, short wide view; captives wait for their release control |
+| abilities `bait`, `scream`, `sedate` | HUD action button | thrown food guards investigate; a directed noise + frozen civilians + a hoarse screamer; a sleeping human |
+| `panels[].links` may name doors | wiring panels | sabotage opens them for the outage only, then they seal again |
+| objectives `control`, `controls`, `ability` | results | done when the control(s) were used / the ability was used |
+| `order`, `requiresMission`, `unlockText`, `location`, `recruits`, `finale` | campaign.js, MissionScreen | progression, the mission-select stage and recruit previews, the ending line |
+
+Tests: `tests/helpers.mjs` (`make`, `walkTo`, `chaseAndBite`, ...) and one `tests/<mission>.test.js` per mission
+with a construction check, every new mechanic, an alternate route, an alarm and a deterministic full route.

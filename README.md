@@ -34,9 +34,25 @@ other platforms report "not connected" until a backend is added behind the same 
 
 ## The loop
 
-Main menu → Outbreaks (mission select) → Briefing → Squad selection (up to 2 from the unlocked deck) →
-the mission → Results (rating from the optional objectives) → the Horde Deck now holds every human you
-infected → replay with a different squad to find other routes (janitor service door, brute weak wall).
+Main menu → Outbreaks (mission select) → Briefing → Squad selection (up to 2 from the unlocked deck, 3 in the
+finale) → the mission → Results (rating from the optional objectives) → the Horde Deck now holds every human you
+infected → replay with a different squad to find other routes.
+
+## The campaign
+
+| # | Mission | Recruits | New mechanics |
+|---|---|---|---|
+| 1 | Night Shift at St. Rotter Hospital | Electrician, Nurse | the tutorial: detection, noise, biting, squad, sabotage |
+| 2 | Mall After Closing | Chef, Security Guard | security doors, sealed shutters + controls, food bait, a guard dog, vents |
+| 3 | Detention of the Dead | Kid, Athlete | vaults, timed switches, a two-switch exit, the bell |
+| 4 | Graveyard Shift Inc. | Office Worker | terminals and badge readers (permanent) vs. sabotage (temporary), an elevator |
+| 5 | Firehouse Fever | Firefighter | fire (impassable) and smoke (coughing), valves, sprinklers, a ventilation fan |
+| 6 | Dead Air | Screamer | the directed scream, live-microphone zones, the broadcast desk |
+| 7 | Outbreak Protocol | Doctor | medical doors, sedation, containment cells, a squad of three |
+
+Completing a mission unlocks the next; every mission stays replayable, and later characters open shortcuts in
+earlier levels (the Kid's vents, the Security Guard's doors, the Brute's weak walls, the Electrician's panels).
+Each mission is one data file in `app/config/` and one Node test file that walks its full route.
 
 ## Play in the browser
 
@@ -81,8 +97,8 @@ Flags: `--no-models` (toon placeholders only), `--autostart` (skip the menus), `
 
 ## Status
 
-Vertical slice: complete playable loop with local persistence (Clayground `KeyValueStore`). All 19 assets are
-generated (11 with the `balanced` TRELLIS preset, 8 props fell back to `fast` after the balanced cascade stalled -
+Seven-mission campaign with local persistence (Clayground `KeyValueStore`). The hospital's 19 assets and the roster's
+22 (zombies, humans, doors, ambulance, props) are generated (11 with the `balanced` TRELLIS preset, 8 props fell back to `fast` after the balanced cascade stalled -
 see `docs/asset-pipeline.md`); the six humanoids are rigged with Idle / Walk / Run / Bite clips.
 PLACEHOLDERS still in use: synthesized audio cues (`scripts/gen-audio.py`), the ambulance (toon box), the human
 electrician (tinted zombie model), deck portraits (drawn silhouettes). Every other asset is generated from the
