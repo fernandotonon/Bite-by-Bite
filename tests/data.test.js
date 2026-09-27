@@ -50,6 +50,8 @@ for (const m of Mi.missions) test("mission " + m.id + ": layout and references a
     for (const pn of (m.panels || [])) for (const l of pn.links) assert.ok((m.lasers || []).find(x => x.id === l) || (m.cameras || []).find(x => x.id === l), "panel link " + l)
     for (const t of (m.traversals || [])) { assert.ok(ABILITIES.includes(t.requires), "traversal requirement " + t.requires); assert.ok(inBounds(m, t.from) && inBounds(m, t.to), "traversal in bounds") }
     for (const c of (m.controls || [])) for (const l of (c.links || [])) assert.ok((m.doors || []).find(d => d.id === l) || (m.lasers || []).find(x => x.id === l) || (m.cameras || []).find(x => x.id === l) || (m.hazards || []).find(x => x.id === l), "control link " + l)
+    for (const d of m.doors) for (const c of (d.openedBy || [])) assert.ok((m.controls || []).find(x => x.id === c), "door openedBy " + c)
+    for (const z of m.zones) for (const c of (z.requires || [])) assert.ok((m.controls || []).find(x => x.id === c), "exit requires " + c)
     for (const o of m.objectives.optional) {
         if (o.kind === "capture") assert.ok(m.humans.find(h => h.recruit === o.target), "capture target " + o.target)
         if (o.kind === "collectible") assert.ok(m.collectibles.find(c => c.id === o.target), "collectible " + o.target)

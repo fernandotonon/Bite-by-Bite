@@ -70,7 +70,7 @@ function createSim(defs) {
         for (i = 0; i < M.cameras.length; i++) { var c = M.cameras[i]; S.cameras.push({ id: c.id, x: c.x, z: c.z, base: rad(c.facing), sweep: rad(c.sweep), period: c.period, facing: rad(c.facing), mountHeight: c.mountHeight, disabledUntil: 0, meter: 0, meterZombie: null, cooldownUntil: 0, view: T.cameraView }) }
         for (i = 0; i < M.lasers.length; i++) { var l = M.lasers[i]; S.lasers.push({ id: l.id, x1: l.x1, z1: l.z1, x2: l.x2, z2: l.z2, height: l.height, disabledUntil: 0, trippedAt: -10 }) }
         for (i = 0; i < M.panels.length; i++) { var p = M.panels[i]; S.panels.push({ id: p.id, x: p.x, z: p.z, facing: rad(p.facing || 0), links: p.links, label: p.label, usedUntil: 0, noticeAt: 0, noticed: true, mode: null }) }
-        for (i = 0; i < M.doors.length; i++) { var d = M.doors[i]; S.doors.push({ id: d.id, x: d.x, z: d.z, w: d.w, d: d.d, open: !!d.open, lockType: d.lockType || null, locked: !!d.lockType, sealed: !!d.sealed, asset: d.asset || null, label: d.label || "Door" }) }
+        for (i = 0; i < M.doors.length; i++) { var d = M.doors[i]; S.doors.push({ id: d.id, x: d.x, z: d.z, w: d.w, d: d.d, open: !!d.open, lockType: d.lockType || null, locked: !!d.lockType, sealed: !!d.sealed || !!(d.openedBy && d.openedBy.length), openedBy: d.openedBy || null, asset: d.asset || null, label: d.label || "Door" }) }
         S.controls = []; S.traversals = []; S.hazards = []
         for (i = 0; i < (M.controls || []).length; i++) { var co2 = M.controls[i]; S.controls.push({ id: co2.id, kind: co2.kind || "switch", x: co2.x, z: co2.z, facing: rad(co2.facing || 0), label: co2.label || co2.kind, requires: co2.requires || null, fallback: co2.fallback || null, links: co2.links || [], asset: co2.asset || null, used: false, usedAt: -1, timed: co2.timed || 0, effect: co2.effect || "open" }) }
         for (i = 0; i < (M.traversals || []).length; i++) { var tr = M.traversals[i]; S.traversals.push({ id: tr.id, kind: tr.kind || "vent", requires: tr.requires, from: tr.from, to: tr.to, label: tr.label || tr.kind || "passage", asset: tr.asset || null, duration: tr.duration || 1.5 }) }
@@ -398,11 +398,12 @@ function createSim(defs) {
         ctl.used = true; ctl.usedAt = S.time; ctl.smashed = !!smashed
         for (var i = 0; i < ctl.links.length; i++) {
             var id = ctl.links[i]
-            for (var k = 0; k < S.doors.length; k++) if (S.doors[k].id === id) { var d = S.doors[k]; d.open = ctl.effect !== "close"; d.locked = false; d.sealed = ctl.effect === "close" ? d.sealed : false; navDirty = true }
+            for (var k = 0; k < S.doors.length; k++) if (S.doors[k].id === id && !S.doors[k].openedBy) { var d = S.doors[k]; d.open = ctl.effect !== "close"; d.locked = false; if (!ctl.timed) d.sealed = ctl.effect === "close" ? d.sealed : false; navDirty = true }
             var l = laserById(id); if (l) l.disabledUntil = 1e9
             var c = cameraById(id); if (c) { c.disabledUntil = 1e9; c.meter = 0 }
             for (k = 0; k < (S.hazards || []).length; k++) if (S.hazards[k].id === id) S.hazards[k].active = false
         }
+        if (ctl.timed) ctl.closesAt = S.time + ctl.timed
         for (i = 0; i < M.objectives.optional.length; i++) { var o = M.objectives.optional[i]; if (o.kind === "control" && o.target === ctl.id) S.objectives[o.id].done = true }
         if (smashed) {
             if (!(ch.traits && ch.traits.insulated)) { zb.stunUntil = S.time + T.smashZapStun; emit("zap", { x: zb.x, z: zb.z, zombie: zb.id }) }
@@ -415,6 +416,25 @@ function createSim(defs) {
         zb.traversing = { to: dest, left: tr.duration, id: tr.id }
         zb.hidden = "__traversal"          // out of sight while inside the passage
         emit("traverseStart", { x: zb.x, z: zb.z, id: tr.id })
+    }
+    function controlActive(c) { return c.used && (!c.timed || S.time < c.closesAt) }
+    function controlById(id) { for (var i = 0; i < S.controls.length; i++) if (S.controls[i].id === id) return S.controls[i]; return null }
+    function stepControls() {
+        var i, k
+        for (i = 0; i < S.controls.length; i++) {
+            var c = S.controls[i]
+            if (c.timed && c.used && S.time >= c.closesAt) {           // a timed control runs out: its links close again, it can be used anew
+                c.used = false
+                for (k = 0; k < c.links.length; k++) for (var j = 0; j < S.doors.length; j++) if (S.doors[j].id === c.links[k] && !S.doors[j].openedBy) { S.doors[j].open = false; navDirty = true }
+                emit("controlExpired", { x: c.x, z: c.z, id: c.id })
+            }
+        }
+        for (i = 0; i < S.doors.length; i++) {                       // doors that need every listed control active at once
+            var d = S.doors[i]; if (!d.openedBy) continue
+            var all = true
+            for (k = 0; k < d.openedBy.length; k++) { var ctl = controlById(d.openedBy[k]); if (!ctl || !controlActive(ctl)) all = false }
+            if (all !== d.open) { d.open = all; navDirty = true; emit(all ? "door" : "doorClosed", { x: d.x, z: d.z, open: all, id: d.id }) }
+        }
     }
     function stepTraversals(dt) {
         for (var i = 0; i < S.squad.length; i++) {
@@ -741,8 +761,9 @@ function createSim(defs) {
         var zb = active()
         var cp = zoneAt(zb.x, zb.z, "checkpoint")
         if (cp) takeCheckpoint(cp.id)
-        var allIn = true
-        for (var i = 0; i < S.squad.length; i++) { var q = S.squad[i]; if (!zoneAt(q.x, q.z, "exit") || q.hidden) allIn = false }
+        var allIn = true, ex = null
+        for (var i = 0; i < S.squad.length; i++) { var q = S.squad[i]; var zq = zoneAt(q.x, q.z, "exit"); if (!zq || q.hidden) allIn = false; else ex = zq }
+        if (allIn && ex && ex.requires) for (i = 0; i < ex.requires.length; i++) { var rc = controlById(ex.requires[i]); if (!rc || !rc.used) { allIn = false; if (S.time - (S.exitHintAt || -10) > 4) { S.exitHintAt = S.time; S.message = { text: "Not yet: " + (rc ? rc.label : ex.requires[i]) + " first", until: S.time + 2.5 } } } }
         if (allIn) { S.exitHold += dt; if (S.exitHold >= T.exitHoldTime) win() } else S.exitHold = 0
     }
     function win() {
@@ -792,6 +813,7 @@ function createSim(defs) {
         for (i = 0; i < S.humans.length; i++) if (S.humans[i].removed) { S.humans = S.humans.filter(function (h) { return !h.removed }); break }
         for (i = 0; i < S.humans.length; i++) { var h = S.humans[i]; if ((h.kind === "guard" || h.kind === "dog") && !h.bitten) stepGuard(h, dt); else stepCivilian(h, dt) }
         stepTraversals(dt)
+        stepControls()
         for (i = 0; i < S.noises.length; i++) S.noises[i].processed = true    // noises raised later this step are heard next step
         for (i = 0; i < S.cameras.length; i++) stepCamera(S.cameras[i], dt)
         for (i = 0; i < S.lasers.length; i++) stepLaser(S.lasers[i])
@@ -812,6 +834,7 @@ function createSim(defs) {
     sim.isLaserActive = function (l) { return S.time >= l.disabledUntil }
     sim.isCameraActive = function (c) { return S.time >= c.disabledUntil }
     sim.canUnlock = canUnlock
+    sim.controlActive = controlActive
     sim.reset()
     return sim
 }

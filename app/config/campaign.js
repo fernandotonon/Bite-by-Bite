@@ -2,8 +2,9 @@
 .pragma library
 .import "missions.js" as Hospital
 .import "mall.js" as Mall
+.import "school.js" as School
 
-var missions = [Hospital.hospital, Mall.mall]
+var missions = [Hospital.hospital, Mall.mall, School.school]
 var byId = {}
 for (var i = 0; i < missions.length; i++) byId[missions[i].id] = missions[i]
 function get(id) { return byId[id] || null }
