@@ -1107,6 +1107,61 @@ $úEÕV ú?€  ú/ó² ú®¯ýú/£Þ}úEê« ú?€  ú0Üú-=îú/$`úE   ú?€  ú0P¸ú.þœwú+… ú
 ú¹4.íú·‚æþúDUV ú?ýú<µú¹4*ú·d±ÇúD&ª« ú?ýú<¡3ú¹4	hú·C••úD/  ú?ýŽú<°‹ú¹2ëzú·^ºúD7UV ú?ýŒú<¿âú¹1ÍŠú·xyØúD?ª« ú?ýú<É¥ú¹1Ã8ú·ÅCúDH  ú?ýŒú<ÍÒú¹2Ì€ú·9ÁúDPUV ú?ýŒú<Ñÿú¹3ÕÈú·zèüúDXª¬ ú?ýŒú<Ì²ú¹3Sxú·’A)úDa  ú?ýŒú<Çeú¹2Ñ)ú·§ÒúDiUV ú?ýŒú<Æú¹2þ?ú·¥ª±úDqª« ú?ýú<ÈËú¹3Úºú·ŽÊúDz   ú?ýú<Ë~ú¹4·5ú·m	ÅúD*« ú?ýú<Ìßú¹2oJú·‘ûúD…UV ú?ýŒú<Î@ú¹0'`ú·ŒŸúD‰€  ú?ýú<Ñú¹0O¼ú·Šù¥úDª¬ ú?ýŒú<Õ6ú¹2èZú·yCdúD‘ÕV ú?ý‹ú<Ùeú¹5€úú·\“†ÿÿimport QtQuick
 import QtQuick3D
 
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790464472525_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790464472525_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790464472525_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790464472525_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790464472525_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790464472525_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790464472525_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790464472525_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790464472525_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790464472525_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790464472525_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790464472525_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790464472525_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790464472525_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790464472525_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790464472525
+        objectName: "qtmesh_gen3d_1_1790464472525"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790464472525_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
 import QtQuick.Timeline
 
 Node {
@@ -2997,6 +3052,61 @@ N°úD‰€  ú?zÞú>Bkú=œüJú>âúDª¬ ú?{‡ú=¿:¸ú=§C¹ú>wúD‘ÕV ú?|&ú=[Bðú=±EÞú>‡
 jCú=£áùú=føúDXª¬ ú?~§âú=?ðú=²¹âú=!,ùúDa  ú?~`„ú=8ú=ÁŒ‰ú=@îúDiUV ú?~TÌú=ËÓú=¾M‹ú=]ûúDqª« ú?~‚àú=nyú=¨ûMú=u¨–úDz   ú?~¦µú<þmú=“¢±ú=‡húD*« ú?	ú<Ùj*ú=fƒTú=wmDúD…UV ú?W¹ú<´ª¢ú=%¬ëú=`—§úD‰€  ú?Š`ú<ŸXú<×L6ú=M”ÁúDª¬ ú?§‘ú<˜q;ú<a½÷ú=>iúD‘ÕV ú?¹‘ú<‘Ú˜ú:¦ò[ú=/5cÿÿimport QtQuick
 import QtQuick3D
 
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790476204309_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790476204309_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790476204309_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790476204309_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790476204309_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790476204309_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790476204309_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790476204309_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790476204309_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790476204309_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790476204309_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790476204309_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790476204309_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790476204309_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790476204309_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790476204309
+        objectName: "qtmesh_gen3d_1_1790476204309"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790476204309_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
 import QtQuick.Timeline
 
 Node {
@@ -4102,6 +4212,171 @@ Node {
 
     // Resources
     Texture {
+        id: qtmesh_gen3d_1_1790476655752_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790476655752_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790476655752_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790476655752_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790476655752_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790476655752_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790476655752_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790476655752_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790476655752_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790476655752_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790476655752_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790476655752_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790476655752_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790476655752_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790476655752_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790476655752
+        objectName: "qtmesh_gen3d_1_1790476655752"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790476655752_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790466636616_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790466636616_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790466636616_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790466636616_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790466636616_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790466636616_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790466636616_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790466636616_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790466636616_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790466636616_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790466636616_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790466636616_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790466636616_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790466636616_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790466636616_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790466636616
+        objectName: "qtmesh_gen3d_1_1790466636616"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790466636616_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790468757603_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790468757603_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790468757603_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790468757603_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790468757603_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790468757603_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790468757603_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790468757603_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790468757603_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790468757603_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790468757603_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790468757603_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790468757603_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790468757603_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790468757603_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790468757603
+        objectName: "qtmesh_gen3d_1_1790468757603"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790468757603_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
         id: qtmesh_gen3d_1_1790415653696_diffuse_png_texture
         objectName: "qtmesh_gen3d_1_1790415653696_diffuse.png"
         generateMipmaps: true
@@ -4140,6 +4415,116 @@ Node {
         source: "meshes/meshes_0__mesh.mesh"
         materials: [
             qtmesh_gen3d_1_1790415653696_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790470622153_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790470622153_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790470622153_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790470622153_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790470622153_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790470622153_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790470622153_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790470622153_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790470622153_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790470622153_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790470622153_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790470622153_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790470622153_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790470622153_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790470622153_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790470622153
+        objectName: "qtmesh_gen3d_1_1790470622153"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790470622153_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790471163022_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790471163022_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790471163022_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790471163022_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790471163022_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790471163022_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790471163022_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790471163022_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790471163022_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790471163022_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790471163022_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790471163022_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790471163022_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790471163022_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790471163022_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790471163022
+        objectName: "qtmesh_gen3d_1_1790471163022"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790471163022_mesh_mat_material
         ]
     }
 
@@ -4250,6 +4635,171 @@ Node {
         source: "meshes/meshes_0__mesh.mesh"
         materials: [
             qtmesh_gen3d_1_1790421992501_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790471727793_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790471727793_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790471727793_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790471727793_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790471727793_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790471727793_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790471727793_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790471727793_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790471727793_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790471727793_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790471727793_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790471727793_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790471727793_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790471727793_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790471727793_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790471727793
+        objectName: "qtmesh_gen3d_1_1790471727793"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790471727793_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790473139416_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790473139416_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790473139416_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790473139416_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790473139416_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790473139416_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790473139416_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790473139416_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790473139416_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790473139416_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790473139416_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790473139416_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790473139416_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790473139416_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790473139416_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790473139416
+        objectName: "qtmesh_gen3d_1_1790473139416"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790473139416_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790473583074_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790473583074_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790473583074_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790473583074_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790473583074_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790473583074_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790473583074_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790473583074_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790473583074_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790473583074_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790473583074_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790473583074_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790473583074_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790473583074_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790473583074_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790473583074
+        objectName: "qtmesh_gen3d_1_1790473583074"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790473583074_mesh_mat_material
         ]
     }
 
@@ -5218,6 +5768,336 @@ Node {
 
     // Resources
     Texture {
+        id: qtmesh_gen3d_1_1790467142179_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790467142179_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790467142179_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790467142179_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790467142179_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790467142179_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790467142179_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790467142179_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790467142179_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790467142179_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790467142179_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790467142179_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790467142179_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790467142179_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790467142179_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790467142179
+        objectName: "qtmesh_gen3d_1_1790467142179"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790467142179_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790474143677_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790474143677_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790474143677_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790474143677_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790474143677_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790474143677_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790474143677_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790474143677_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790474143677_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790474143677_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790474143677_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790474143677_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790474143677_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790474143677_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790474143677_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790474143677
+        objectName: "qtmesh_gen3d_1_1790474143677"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790474143677_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790477372420_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790477372420_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790477372420_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790477372420_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790477372420_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790477372420_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790477372420_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790477372420_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790477372420_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790477372420_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790477372420_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790477372420_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790477372420_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790477372420_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790477372420_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790477372420
+        objectName: "qtmesh_gen3d_1_1790477372420"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790477372420_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790465774075_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790465774075_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790465774075_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790465774075_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790465774075_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790465774075_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790465774075_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790465774075_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790465774075_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790465774075_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790465774075_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790465774075_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790465774075_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790465774075_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790465774075_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790465774075
+        objectName: "qtmesh_gen3d_1_1790465774075"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790465774075_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790468400867_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790468400867_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790468400867_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790468400867_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790468400867_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790468400867_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790468400867_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790468400867_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790468400867_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790468400867_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790468400867_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790468400867_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790468400867_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790468400867_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790468400867_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790468400867
+        objectName: "qtmesh_gen3d_1_1790468400867"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790468400867_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790472385523_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790472385523_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790472385523_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790472385523_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790472385523_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790472385523_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790472385523_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790472385523_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790472385523_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790472385523_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790472385523_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790472385523_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790472385523_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790472385523_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790472385523_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790472385523
+        objectName: "qtmesh_gen3d_1_1790472385523"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790472385523_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
         id: qtmesh_gen3d_1_1790420669927_diffuse_png_texture
         objectName: "qtmesh_gen3d_1_1790420669927_diffuse.png"
         generateMipmaps: true
@@ -5256,6 +6136,171 @@ Node {
         source: "meshes/meshes_0__mesh.mesh"
         materials: [
             qtmesh_gen3d_1_1790420669927_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790470155302_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790470155302_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790470155302_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790470155302_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790470155302_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790470155302_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790470155302_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790470155302_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790470155302_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790470155302_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790470155302_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790470155302_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790470155302_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790470155302_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790470155302_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790470155302
+        objectName: "qtmesh_gen3d_1_1790470155302"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790470155302_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790475717480_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790475717480_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790475717480_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790475717480_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790475717480_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790475717480_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790475717480_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790475717480_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790475717480_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790475717480_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790475717480_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790475717480_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790475717480_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790475717480_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790475717480_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790475717480
+        objectName: "qtmesh_gen3d_1_1790475717480"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790475717480_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790475073631_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790475073631_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790475073631_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790475073631_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790475073631_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790475073631_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790475073631_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790475073631_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790475073631_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790475073631_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790475073631_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790475073631_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790475073631_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790475073631_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790475073631_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790475073631
+        objectName: "qtmesh_gen3d_1_1790475073631"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790475073631_mesh_mat_material
         ]
     }
 
@@ -6523,6 +7568,116 @@ Node {
 
     // Resources
     Texture {
+        id: qtmesh_gen3d_1_1790478371716_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790478371716_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790478371716_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790478371716_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790478371716_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790478371716_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790478371716_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790478371716_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790478371716_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790478371716_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790478371716_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790478371716_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790478371716_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790478371716_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790478371716_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790478371716
+        objectName: "qtmesh_gen3d_1_1790478371716"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790478371716_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790477819924_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790477819924_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790477819924_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790477819924_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790477819924_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790477819924_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790477819924_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790477819924_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790477819924_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790477819924_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790477819924_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790477819924_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790477819924_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790477819924_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790477819924_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790477819924
+        objectName: "qtmesh_gen3d_1_1790477819924"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790477819924_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
         id: qtmesh_gen3d_1_1790414677536_diffuse_png_texture
         objectName: "qtmesh_gen3d_1_1790414677536_diffuse.png"
         generateMipmaps: true
@@ -6561,6 +7716,61 @@ Node {
         source: "meshes/meshes_0__mesh.mesh"
         materials: [
             qtmesh_gen3d_1_1790414677536_mesh_mat_material
+        ]
+    }
+
+    // Animations:
+}
+import QtQuick
+import QtQuick3D
+
+Node {
+    id: node
+    // --- game runtime API (added by scripts/import-runtime.py) ---
+    property string clip: "Idle"
+    readonly property var clips: []
+    signal clipFinished(string name)
+
+    // Resources
+    Texture {
+        id: qtmesh_gen3d_1_1790474537269_diffuse_png_texture
+        objectName: "qtmesh_gen3d_1_1790474537269_diffuse.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790474537269_diffuse.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790474537269_roughness_png_texture
+        objectName: "qtmesh_gen3d_1_1790474537269_roughness.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790474537269_roughness.jpg"
+    }
+    Texture {
+        id: qtmesh_gen3d_1_1790474537269_normal_png_texture
+        objectName: "qtmesh_gen3d_1_1790474537269_normal.png"
+        generateMipmaps: true
+        mipFilter: Texture.Linear
+        source: "maps/qtmesh_gen3d_1_1790474537269_normal.jpg"
+    }
+    PrincipledMaterial {
+        id: qtmesh_gen3d_1_1790474537269_mesh_mat_material
+        objectName: "qtmesh_gen3d_1_1790474537269_mesh_mat"
+        baseColorMap: qtmesh_gen3d_1_1790474537269_diffuse_png_texture
+        metalnessMap: qtmesh_gen3d_1_1790474537269_roughness_png_texture
+        roughnessMap: qtmesh_gen3d_1_1790474537269_roughness_png_texture
+        roughness: 1
+        normalMap: qtmesh_gen3d_1_1790474537269_normal_png_texture
+        alphaMode: PrincipledMaterial.Opaque
+    }
+
+    // Nodes:
+    Model {
+        id: qtmesh_gen3d_1_1790474537269
+        objectName: "qtmesh_gen3d_1_1790474537269"
+        source: "meshes/meshes_0__mesh.mesh"
+        materials: [
+            qtmesh_gen3d_1_1790474537269_mesh_mat_material
         ]
     }
 

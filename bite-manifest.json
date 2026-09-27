@@ -1,1 +1,1 @@
-{"expectedBytes": 75154758, "bigFiles": 76, "packedFiles": 423, "packBytes": 703865, "app": {"bite_by_bite.js": 366996, "qtloader.js": 12135, "bite_by_bite.wasm": 38950913}}
+{"expectedBytes": 108249957, "bigFiles": 164, "packedFiles": 445, "packBytes": 744499, "app": {"bite_by_bite.js": 366996, "qtloader.js": 12135, "bite_by_bite.wasm": 39094629}}
