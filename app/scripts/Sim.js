@@ -73,7 +73,7 @@ function createSim(defs) {
         for (i = 0; i < M.doors.length; i++) { var d = M.doors[i]; S.doors.push({ id: d.id, x: d.x, z: d.z, w: d.w, d: d.d, open: !!d.open, lockType: d.lockType || null, locked: !!d.lockType, sealed: !!d.sealed || !!(d.openedBy && d.openedBy.length), openedBy: d.openedBy || null, asset: d.asset || null, label: d.label || "Door" }) }
         S.controls = []; S.traversals = []; S.hazards = []
         for (i = 0; i < (M.hazards || []).length; i++) { var hz = M.hazards[i]; S.hazards.push({ id: hz.id, kind: hz.kind, x: hz.x, z: hz.z, w: hz.w, d: hz.d, active: hz.active !== false, label: hz.label || hz.kind }) }
-        for (i = 0; i < (M.controls || []).length; i++) { var co2 = M.controls[i]; S.controls.push({ id: co2.id, kind: co2.kind || "switch", x: co2.x, z: co2.z, facing: rad(co2.facing || 0), label: co2.label || co2.kind, requires: co2.requires || null, fallback: co2.fallback || null, links: co2.links || [], asset: co2.asset || null, used: false, usedAt: -1, timed: co2.timed || 0, effect: co2.effect || "open" }) }
+        for (i = 0; i < (M.controls || []).length; i++) { var co2 = M.controls[i]; S.controls.push({ id: co2.id, kind: co2.kind || "switch", x: co2.x, z: co2.z, facing: rad(co2.facing || 0), label: co2.label || co2.kind, requires: co2.requires || null, fallback: co2.fallback || null, links: co2.links || [], asset: co2.asset || null, used: false, usedAt: -1, timed: co2.timed || 0, effect: co2.effect || "open", releases: co2.releases || null }) }
         for (i = 0; i < (M.traversals || []).length; i++) { var tr = M.traversals[i]; S.traversals.push({ id: tr.id, kind: tr.kind || "vent", requires: tr.requires, from: tr.from, to: tr.to, label: tr.label || tr.kind || "passage", asset: tr.asset || null, duration: tr.duration || 1.5 }) }
         for (i = 0; i < M.props.length; i++) { var pr = M.props[i]; S.props.push({ id: pr.id, asset: pr.asset, x: pr.x, z: pr.z, w: pr.w, d: pr.d, facing: rad(pr.facing || 0), blocksSight: !!pr.blocksSight, movable: !!pr.movable, heavy: !!pr.heavy, hide: !!pr.hide, decor: !!pr.decor, label: pr.label || pr.id, occupant: null, placeholder: !!pr.placeholder }) }
         for (i = 0; i < M.pickups.length; i++) { var pk = M.pickups[i]; S.pickups.push({ id: pk.id, kind: pk.kind, x: pk.x, z: pk.z, label: pk.label || pk.kind, heldBy: null, flying: null, playingUntil: 0 }) }
@@ -365,8 +365,12 @@ function createSim(defs) {
         else if (pn && !(ch.traits && ch.traits.noSmash)) out.push({ kind: "smash", text: "Smash " + pn.label + " (alarm!)", target: pn })
         var ww = nearest(S.walls, zb.x, zb.z, R + 0.2, function (w) { return w.weak && !w.broken })
         if (ww) out.push({ kind: "break", text: (ch.traits && ch.traits.heavyHands ? "Break weak wall" : "Weak wall (needs Brute)"), target: ww, needs: "smash" })
-        var hu = nearest(S.humans, zb.x, zb.z, T.biteRange + 0.3, function (h) { return h.vulnerable && !h.bitten })
+        var hu = nearest(S.humans, zb.x, zb.z, T.biteRange + 0.3, function (h) { return h.vulnerable && !h.bitten && h.kind !== "captive" })
         if (hu) out.push({ kind: "bite", text: "Bite " + hu.label, target: hu })
+        if (ch.ability && ch.ability.id === "sedate" && S.time >= (zb.sedateReadyAt || 0)) {
+            var sh = nearest(S.humans, zb.x, zb.z, T.biteRange + 0.5, function (h) { return !h.bitten && h.kind !== "captive" && !(h.sedatedUntil > S.time) })
+            if (sh) out.push({ kind: "sedate", text: "Sedate " + sh.label, target: sh, needs: "sedate" })
+        }
         return out
     }
     function pickCandidate(c) {   // the contextual action: anything specific beats the bite, the bite beats "low" ability offers
@@ -397,6 +401,11 @@ function createSim(defs) {
         case "traverseLocked": S.message = { text: t.label + " needs " + t.requires, until: S.time + 2 }; return false
         case "bait": throwBait(zb); return true
         case "scream": scream(zb); return true
+        case "sedate":
+            t.sedatedUntil = S.time + (T.sedateTime || 12); t.meter = 0; t.path = []; t.moving = false
+            if (t.state === "alert" || t.state === "suspicious" || t.state === "investigate" || t.state === "search") { t.state = "return"; t.priority = 0 }
+            zb.sedateReadyAt = S.time + (T.sedateCooldown || 6)
+            noteAbility("sedate"); emit("sedate", { x: t.x, z: t.z, human: t.id }); return true
         case "pickup": t.heldBy = zb.id; emit("pickup", { x: t.x, z: t.z, item: t.id }); return true
         case "throw": throwPickup(zb, t); return true
         case "hide": zb.hidden = t.id; t.occupant = zb.id; zb.hideReturn = { x: zb.x, z: zb.z }; zb.x = t.x + t.w / 2; zb.z = t.z + t.d / 2; emit("hide", { x: zb.x, z: zb.z }); return true
@@ -426,6 +435,7 @@ function createSim(defs) {
             for (k = 0; k < (S.hazards || []).length; k++) if (S.hazards[k].id === id && S.hazards[k].active) { S.hazards[k].active = false; navDirty = true; emit("hazardOff", { x: S.hazards[k].x + S.hazards[k].w / 2, z: S.hazards[k].z + S.hazards[k].d / 2, kind: S.hazards[k].kind }) }
         }
         if (ctl.timed) ctl.closesAt = S.time + ctl.timed
+        if (ctl.releases) for (i = 0; i < S.humans.length; i++) { var cap = S.humans[i]; if (cap.id === ctl.releases && cap.kind === "captive" && !cap.removed) releaseCaptive(cap) }
         for (i = 0; i < M.objectives.optional.length; i++) { var o = M.objectives.optional[i]; if (o.kind === "control" && o.target === ctl.id) S.objectives[o.id].done = true }
         if (smashed) {
             if (!(ch.traits && ch.traits.insulated)) { zb.stunUntil = S.time + T.smashZapStun; emit("zap", { x: zb.x, z: zb.z, zombie: zb.id }) }
@@ -438,6 +448,13 @@ function createSim(defs) {
         zb.traversing = { to: dest, left: tr.duration, id: tr.id }
         zb.hidden = "__traversal"          // out of sight while inside the passage
         emit("traverseStart", { x: zb.x, z: zb.z, id: tr.id })
+    }
+    function releaseCaptive(h) {   // a contained zombie joins the squad
+        h.removed = true
+        var nz = makeZombie(h.recruit, h.x, h.z, h.facing); nz.mode = "follow"
+        S.squad.push(nz)
+        if (S.recruited.indexOf(h.recruit) < 0) S.recruited.push(h.recruit)
+        emit("release", { x: h.x, z: h.z, charId: h.recruit, zombie: nz.id })
     }
     function controlActive(c) { return c.used && (!c.timed || S.time < c.closesAt) }
     function controlById(id) { for (var i = 0; i < S.controls.length; i++) if (S.controls[i].id === id) return S.controls[i]; return null }
@@ -637,6 +654,8 @@ function createSim(defs) {
         h.path = findPath(h.x, h.z, x, z); h.lookLeft = 0
     }
     function stepGuard(h, dt) {
+        if (h.sedatedUntil > S.time) { h.moving = false; h.meter = 0; return }      // asleep on the floor
+        if (h.sedatedUntil && h.sedatedUntil <= S.time) { h.sedatedUntil = 0; emit("wake", { x: h.x, z: h.z, who: h.id }) }
         var seen = updateMeter(h, dt, true)
         h.moving = false
         var sp = h.speedMulGuard && h.speedMulGuard !== 1 ? { patrol: T.guardSpeed.patrol * h.speedMulGuard, investigate: T.guardSpeed.investigate * h.speedMulGuard, alert: T.guardSpeed.alert * h.speedMulGuard, search: T.guardSpeed.search * h.speedMulGuard } : T.guardSpeed
@@ -728,6 +747,8 @@ function createSim(defs) {
         h.moving = false
         if (h.state === "turned") { h.facing = norm(h.facing + 0.3 * dt); return }
         if (h.interruptedUntil && S.time < h.interruptedUntil) return       // frozen by a scream
+        if (h.sedatedUntil > S.time) { h.meter = 0; return }
+        if (h.kind === "captive") return                                    // waits in its cell
         if (h.witness) {
             var seen = updateMeter(h, dt, true)
             if (h.meter >= 1 && !h.alarmed) { h.alarmed = true; h.alarmUntil = S.time + 4; addNoise(h.x, h.z, 9, "scream", h.id); raiseAlarm(seen ? seen.x : h.x, seen ? seen.z : h.z, "scream"); emit("scream", { x: h.x, z: h.z, who: h.id }) }
@@ -820,6 +841,7 @@ function createSim(defs) {
             var o = M.objectives.optional[k], st = S.objectives[o.id]
             if (o.kind === "noAlert") st.done = !st.failed
             if (o.kind === "time") st.done = S.elapsed <= o.seconds
+            if (o.kind === "controls") { var all = true; for (var q = 0; q < o.targets.length; q++) { var cc = controlById(o.targets[q]); if (!cc || !cc.used) all = false } st.done = all }
         }
         emit("won", { time: S.elapsed })
     }

@@ -155,6 +155,9 @@ FocusScope {
             case "traverseEnd": audio.play("hide"); level.snapCamera(); break
             case "cough": audio.play("step"); level.addFx(e.x, e.z, "noise"); break
             case "screamAbility": audio.play("scream"); level.addFx(e.toX, e.toZ, "alarm"); break
+            case "sedate": audio.play("hide"); level.addFx(e.x, e.z, "bite"); hud.toast = "Sedated - asleep for a while"; hud.toastUntil = sim.state.elapsed + 2; break
+            case "wake": audio.play("suspicious"); break
+            case "release": audio.play("recruit"); level.addFx(e.x, e.z, "bite"); hud.toast = Characters.get(e.charId).name + " is free and follows you!"; hud.toastUntil = sim.state.elapsed + 3; break
             case "sonicAlarm": audio.play("alarm"); hud.toast = "Live microphones! The whole studio heard that."; hud.toastUntil = sim.state.elapsed + 3; break
             case "hazardOff": audio.play("sabotage"); level.addFx(e.x, e.z, "noise"); hud.toast = e.kind === "fire" ? "Fire out" : "Smoke clearing"; hud.toastUntil = sim.state.elapsed + 2; break
             case "controlExpired": audio.play("locked"); break

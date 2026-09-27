@@ -36,6 +36,12 @@ Item {
                 text: unlocks && unlocks.newCharacters.length ? "NEW IN THE HORDE DECK: " + unlocks.newCharacters.map(function (id) { return Characters.get(id).name }).join(", ") : ""
                 color: Theme.accent2; font.pixelSize: 16; font.bold: true; font.family: Theme.font; width: parent.width; wrapMode: Text.WordWrap
             }
+            Text {
+                visible: !!(game && game.mission && game.mission.finale)
+                width: parent.width; wrapMode: Text.WordWrap
+                text: game && game.mission && game.mission.finale ? "THE OUTBREAK IS COMPLETE. Your horde of " + game.save.progress.unlocked.length + " marches on: " + game.save.progress.unlocked.map(function (id) { return Characters.get(id).name.replace(" Zombie", "") }).join(", ") + "." : ""
+                color: Theme.accent; font.pixelSize: 15; font.bold: true; font.family: Theme.font
+            }
             Text { visible: results && results.recruited.length && !(unlocks && unlocks.newCharacters.length); text: "Recruited: " + (results ? results.recruited.map(function (id) { return Characters.get(id).name }).join(", ") : "") + " (already in the deck)"; color: Theme.muted; font.pixelSize: 14; font.family: Theme.font }
             MenuList {
                 id: menu

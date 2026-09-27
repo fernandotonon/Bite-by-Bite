@@ -6,8 +6,9 @@
 .import "office.js" as Office
 .import "firehouse.js" as Firehouse
 .import "studio.js" as Studio
+.import "lab.js" as Lab
 
-var missions = [Hospital.hospital, Mall.mall, School.school, Office.office, Firehouse.firehouse, Studio.studio]
+var missions = [Hospital.hospital, Mall.mall, School.school, Office.office, Firehouse.firehouse, Studio.studio, Lab.lab]
 var byId = {}
 for (var i = 0; i < missions.length; i++) byId[missions[i].id] = missions[i]
 function get(id) { return byId[id] || null }

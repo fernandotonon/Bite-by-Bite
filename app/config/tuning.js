@@ -52,5 +52,7 @@ var tuning = {
     // firehouse: smoke (non-fireproof zombies cough)
     smokeSlow: 0.6, coughEvery: 2.5, coughStun: 0.8, coughNoise: 4,
     // studio: the scream and the live-microphone zones
-    screamReach: 4, screamNoise: 11, screamCooldown: 10, hoarseTime: 4, interruptTime: 3, sonicStun: 1.5
+    screamReach: 4, screamNoise: 11, screamCooldown: 10, hoarseTime: 4, interruptTime: 3, sonicStun: 1.5,
+    // lab: sedation
+    sedateTime: 12, sedateCooldown: 6
 }

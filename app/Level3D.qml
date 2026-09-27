@@ -37,7 +37,8 @@ Item {
         for (i = 0; i < st.humans.length; i++) {
             h = st.humans[i]; o = humanRep.objectAt(i); if (!o) continue
             o.x = h.x * 100; o.z = h.z * 100; o.heading = h.facing * deg; o.assetId = h.asset
-            o.moving = !!h.moving; o.running = h.state === "alert"; o.turned = !!h.bitten
+            o.moving = !!h.moving; o.running = h.state === "alert"; o.turned = !!h.bitten || h.kind === "captive"
+            o.stunned = h.sedatedUntil > st.time
             c = humanConeRep.objectAt(i); if (!c) continue
             c.visible = showCones && h.view.range > 0 && !h.bitten && !h.alarmed
             if (c.visible) { c.geometry.positions = conePositions(h.x, h.z, h.facing, h.view.angle, h.view.range); c.tone = stateColor(h) }

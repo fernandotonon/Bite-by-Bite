@@ -8,6 +8,7 @@ if(NODE_EXECUTABLE)
     add_test(NAME node_office_rules COMMAND "${NODE_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/office.test.js")
     add_test(NAME node_firehouse_rules COMMAND "${NODE_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/firehouse.test.js")
     add_test(NAME node_studio_rules COMMAND "${NODE_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/studio.test.js")
+    add_test(NAME node_lab_rules COMMAND "${NODE_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/lab.test.js")
 endif()
 
 # Headless wiring check of the QML side: walks the menus, starts a mission, wins it, checks persistence.
@@ -49,6 +50,13 @@ set_tests_properties(qml_autotest_firehouse PROPERTIES
 add_test(NAME qml_autotest_studio
          COMMAND "$<TARGET_FILE:bite_by_bite>" --autotest --mission=dead_air_studio)
 set_tests_properties(qml_autotest_studio PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=minimal;QT_QUICK_BACKEND=software"
+    PASS_REGULAR_EXPRESSION "AUTOTEST OK"
+    FAIL_REGULAR_EXPRESSION "AUTOTEST FAIL;TypeError;ReferenceError"
+    TIMEOUT 120)
+add_test(NAME qml_autotest_lab
+         COMMAND "$<TARGET_FILE:bite_by_bite>" --autotest --mission=outbreak_protocol)
+set_tests_properties(qml_autotest_lab PROPERTIES
     ENVIRONMENT "QT_QPA_PLATFORM=minimal;QT_QUICK_BACKEND=software"
     PASS_REGULAR_EXPRESSION "AUTOTEST OK"
     FAIL_REGULAR_EXPRESSION "AUTOTEST FAIL;TypeError;ReferenceError"

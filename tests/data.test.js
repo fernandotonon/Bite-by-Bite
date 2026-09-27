@@ -46,6 +46,7 @@ for (const m of Mi.missions) test("mission " + m.id + ": layout and references a
         assert.ok(inBounds(m, h), "human in bounds " + h.id)
         for (const p of (h.patrol || h.wander || [])) assert.ok(inBounds(m, p), h.id + " waypoint in bounds")
         if (h.recruit) { const c = Ch.get(h.recruit); assert.ok(c && c.capturable !== false, h.id + " recruits a capturable character") }
+        if (h.kind === "captive") assert.ok((m.controls || []).find(c => c.releases === h.id), h.id + " has a release control")
     }
     for (const pn of (m.panels || [])) for (const l of pn.links) assert.ok((m.lasers || []).find(x => x.id === l) || (m.cameras || []).find(x => x.id === l) || m.doors.find(d => d.id === l), "panel link " + l)
     for (const t of (m.traversals || [])) { assert.ok(ABILITIES.includes(t.requires), "traversal requirement " + t.requires); assert.ok(inBounds(m, t.from) && inBounds(m, t.to), "traversal in bounds") }
@@ -57,6 +58,7 @@ for (const m of Mi.missions) test("mission " + m.id + ": layout and references a
         if (o.kind === "collectible") assert.ok(m.collectibles.find(c => c.id === o.target), "collectible " + o.target)
         if (o.kind === "control") assert.ok((m.controls || []).find(c => c.id === o.target), "control objective " + o.target)
         if (o.kind === "ability") assert.ok(ABILITIES.includes(o.target), "ability objective " + o.target)
+        if (o.kind === "controls") for (const t of o.targets) assert.ok((m.controls || []).find(c => c.id === t), "controls objective " + t)
     }
     for (const h of (m.hazards || [])) assert.ok(["fire", "smoke", "sonic"].includes(h.kind) && h.w > 0 && h.d > 0 && inBounds(m, h), "hazard " + h.id)
     if (m.location) assert.ok(As.get(m.location), "location asset " + m.location)
