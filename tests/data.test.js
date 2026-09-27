@@ -47,7 +47,7 @@ for (const m of Mi.missions) test("mission " + m.id + ": layout and references a
         for (const p of (h.patrol || h.wander || [])) assert.ok(inBounds(m, p), h.id + " waypoint in bounds")
         if (h.recruit) { const c = Ch.get(h.recruit); assert.ok(c && c.capturable !== false, h.id + " recruits a capturable character") }
     }
-    for (const pn of (m.panels || [])) for (const l of pn.links) assert.ok((m.lasers || []).find(x => x.id === l) || (m.cameras || []).find(x => x.id === l), "panel link " + l)
+    for (const pn of (m.panels || [])) for (const l of pn.links) assert.ok((m.lasers || []).find(x => x.id === l) || (m.cameras || []).find(x => x.id === l) || m.doors.find(d => d.id === l), "panel link " + l)
     for (const t of (m.traversals || [])) { assert.ok(ABILITIES.includes(t.requires), "traversal requirement " + t.requires); assert.ok(inBounds(m, t.from) && inBounds(m, t.to), "traversal in bounds") }
     for (const c of (m.controls || [])) for (const l of (c.links || [])) assert.ok((m.doors || []).find(d => d.id === l) || (m.lasers || []).find(x => x.id === l) || (m.cameras || []).find(x => x.id === l) || (m.hazards || []).find(x => x.id === l), "control link " + l)
     for (const d of m.doors) for (const c of (d.openedBy || [])) assert.ok((m.controls || []).find(x => x.id === c), "door openedBy " + c)

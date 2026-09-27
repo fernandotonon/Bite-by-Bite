@@ -316,7 +316,7 @@ function createSim(defs) {
         var held = null
         for (var i = 0; i < S.pickups.length; i++) if (S.pickups[i].heldBy === zb.id) held = S.pickups[i]
         if (held) out.push({ kind: "throw", text: "Throw " + held.label, target: held })
-        var d = nearest(S.doors, zb.x, zb.z, R + 0.2, function (dd) { return !dd.sealed })
+        var d = nearest(S.doors, zb.x, zb.z, R + 0.2, function (dd) { return !dd.sealed && !dd.tempUntil })
         if (d) {
             if (d.locked) { var lk = LOCKS[d.lockType] || {}; out.push({ kind: "unlock", text: (canUnlock(ch, d.lockType) ? "Unlock " : "Locked: ") + d.label, target: d, needs: lk.ability || null }) }
             else out.push({ kind: "door", text: (d.open ? "Close " : "Open ") + d.label, target: d })
@@ -429,6 +429,10 @@ function createSim(defs) {
                 emit("controlExpired", { x: c.x, z: c.z, id: c.id })
             }
         }
+        for (i = 0; i < S.doors.length; i++) {                       // temporarily opened doors (a sabotaged panel) close again
+            var dt2 = S.doors[i]
+            if (dt2.tempUntil && S.time >= dt2.tempUntil) { dt2.tempUntil = null; if (dt2.locked || dt2.sealed) { dt2.open = false; navDirty = true; emit("doorClosed", { x: dt2.x, z: dt2.z, id: dt2.id }) } }
+        }
         for (i = 0; i < S.doors.length; i++) {                       // doors that need every listed control active at once
             var d = S.doors[i]; if (!d.openedBy) continue
             var all = true
@@ -454,6 +458,9 @@ function createSim(defs) {
         for (var i = 0; i < panel.links.length; i++) {
             var l = laserById(panel.links[i]); if (l) l.disabledUntil = until
             var c = cameraById(panel.links[i]); if (c) { c.disabledUntil = until; c.meter = 0 }
+            for (var k = 0; k < S.doors.length; k++) if (S.doors[k].id === panel.links[i]) {   // badge readers / elevators: open until the outage ends
+                var d = S.doors[k]; d.open = true; d.tempUntil = until; navDirty = true
+            }
         }
     }
     function throwPickup(zb, p) {
