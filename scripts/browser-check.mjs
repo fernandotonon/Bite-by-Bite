@@ -23,7 +23,7 @@ const port = Number(opt("--port", process.env.CDP_PORT || 0)) || (9400 + Math.fl
 const proc = spawn(chrome, [
   "--headless=new", `--remote-debugging-port=${port}`, "--remote-allow-origins=*", `--window-size=${size}`,
   "--no-first-run", "--user-data-dir=" + (process.env.PROFILE ?? "/tmp/bite-browser-check"), "--enable-unsafe-swiftshader",
-  "--ignore-gpu-blocklist", "--use-angle=metal", "--enable-webgl", "--mute-audio", "about:blank",
+  "--ignore-gpu-blocklist", ...(process.platform === "darwin" ? ["--use-angle=metal"] : ["--use-angle=swiftshader", "--no-sandbox"]), "--enable-webgl", "--mute-audio", "about:blank",
 ], { stdio: "ignore" });
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));

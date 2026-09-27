@@ -64,8 +64,12 @@ floating stick on the left, action buttons on the right; effects are reduced the
 scripts/build-wasm.sh          # Qt 6.11.1 wasm_multithread + emsdk 4.0.7 -> deploy/multithread
 python3 scripts/serve.py deploy/multithread              # local test with COOP/COEP headers
 node scripts/browser-check.mjs "http://localhost:8080/index.html?args=--autotest" --seconds 90
-scripts/deploy-pages.sh        # pushes deploy/multithread to the gh-pages branch
+scripts/deploy-pages.sh        # manual: pushes deploy/multithread to the gh-pages branch
 ```
+
+Every push to `main` runs `.github/workflows/deploy.yml`: Node rule checks, the WebAssembly build on Ubuntu
+(Qt 6.11.1 + emsdk 4.0.7 via aqt), a headless-Chrome autotest of the built page, then GitHub Pages (source:
+GitHub Actions).
 
 On the web the save data lives in `localStorage`, audio goes through the browser `AudioContext`, and the 3D
 runtime assets are preloaded into Qt's in-memory filesystem (`/game/assets/...`) by the loading page; the

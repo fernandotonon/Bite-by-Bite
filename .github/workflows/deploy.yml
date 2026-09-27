@@ -1,0 +1,109 @@
+# Every push to main: Node rule checks -> WebAssembly build (Qt 6.11.1 wasm_multithread + emsdk 4.0.7, the pins
+# Clayground and the sibling projects use) -> headless-Chrome autotest of the built page -> GitHub Pages.
+# The Pages site is configured with "GitHub Actions" as its source (scripts/deploy-pages.sh remains for a manual
+# push of a local build to the gh-pages branch, which Pages ignores while the source is Actions).
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  QT_VERSION: '6.11.1'
+  QT_MODULES: 'qtmultimedia qtquick3d qtquicktimeline qtshadertools'
+  EMSDK_VERSION: '4.0.7'
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  tests:
+    name: rules (node)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Data and simulation checks for every mission
+        run: |
+          set -e
+          for t in tests/*.test.js; do echo "== $t"; node "$t"; done
+
+  web:
+    name: webassembly build + check
+    needs: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v16
+        with: { version: '${{ env.EMSDK_VERSION }}' }
+      - name: Install Qt (host tools)
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
+          modules: ${{ env.QT_MODULES }}
+          cache: true
+          dir: ${{ runner.temp }}/qt-host
+      - name: Install Qt (wasm)
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ env.QT_VERSION }}
+          host: all_os
+          target: wasm
+          arch: wasm_multithread
+          modules: ${{ env.QT_MODULES }}
+          cache: true
+      - name: Linux dependencies
+        run: sudo apt-get update && sudo apt-get install -y ninja-build && python3 -m pip install --user pillow
+      - name: Build + deploy directory
+        env:
+          QT_HOST_ROOT: ${{ runner.temp }}/qt-host/Qt/${{ env.QT_VERSION }}/gcc_64
+        run: |
+          export QT_WASM_ROOT="$QT_ROOT_DIR"
+          sed -i 's/sysctl -n hw.ncpu 2>\/dev\/null || nproc/nproc/' scripts/build-wasm.sh
+          scripts/build-wasm.sh
+      - name: Headless autotest of the built page (Chrome)
+        run: |
+          python3 scripts/serve.py deploy/multithread --port 8093 > serve.log 2>&1 &
+          sleep 2
+          node scripts/browser-check.mjs "http://localhost:8093/index.html?args=--autotest" --seconds 150 --out browser-check.png --chrome "$(command -v google-chrome || command -v chromium-browser)" | tee check.log
+          grep -q "AUTOTEST OK" check.log
+          ! grep -qE "AUTOTEST FAIL|failed to load|TypeError|ReferenceError" check.log
+      - name: Size report
+        run: |
+          W=deploy/multithread/bite_by_bite.wasm
+          { echo "### Web build"; echo "| raw | gzip -9 |"; echo "|---|---|"
+            echo "| $(du -h $W | cut -f1) | $(gzip -9 -c $W | wc -c | awk '{printf "%.1f MB", $1/1048576}') |"
+            echo "assets: $(du -sh deploy/multithread/assets | cut -f1), $(find deploy/multithread/assets -type f | wc -l) files"; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: browser-check
+          path: |
+            browser-check.png
+            check.log
+          retention-days: 7
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: deploy/multithread
+
+  deploy:
+    name: github pages
+    needs: web
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
