@@ -66,7 +66,7 @@ var firehouse = {
         { id: "smoke_e", kind: "smoke", x: 20.3, z: 6.3, w: 7.4, d: 7.4, label: "Smoke" }
     ],
     controls: [
-        { id: "valve_kitchen", kind: "valve", x: 23.0, z: 5.4, facing: 0, label: "Kitchen valve", requires: "rescue", links: ["fire_kitchen"], asset: "fire_valve" },
+        { id: "valve_kitchen", kind: "valve", x: 23.2, z: 0.6, facing: 180, label: "Kitchen valve", requires: "rescue", links: ["fire_kitchen"], asset: "fire_valve" },
         { id: "valve_tower", kind: "valve", x: 7.6, z: 12.0, facing: 90, label: "Tower valve", requires: "rescue", links: ["fire_tower"], asset: "fire_valve" },
         { id: "sprinklers", kind: "switch", x: 19.5, z: 6.6, facing: 270, label: "Sprinkler master", links: ["fire_kitchen", "fire_tower"], asset: "electrical_panel" },
         { id: "vent_fan", kind: "switch", x: 27.4, z: 13.2, facing: 270, label: "Ventilation fan", links: ["smoke_e"], asset: "vent_fan" },

@@ -40,9 +40,9 @@ test("smoke: a standard zombie coughs (slow, noisy, stunned), the firefighter do
 })
 
 test("valves need the firefighter; the sprinkler master puts both fires out for anyone", () => {
-    const s = make(["standard"], { blind: true }); s.activeZombie().x = 23.2; s.activeZombie().z = 5.6
+    const s = make(["standard"], { blind: true }); s.activeZombie().x = 23.6; s.activeZombie().z = 0.9
     assert.equal(s.prompt().kind, "controlLocked"); assert.ok(!s.interact()); assert.ok(hz(s, "fire_kitchen").active)
-    const f = make(["firefighter"], { blind: true }); f.activeZombie().x = 23.2; f.activeZombie().z = 5.6
+    const f = make(["firefighter"], { blind: true }); f.activeZombie().x = 23.6; f.activeZombie().z = 0.9
     assert.equal(f.prompt().kind, "control"); assert.ok(f.ability()); assert.ok(!hz(f, "fire_kitchen").active)
     const sp = make(["standard"], { blind: true }); sp.activeZombie().x = 18.6; sp.activeZombie().z = 6.8
     assert.equal(sp.prompt().kind, "control"); assert.ok(sp.interact())
@@ -83,7 +83,8 @@ test("full flow (standard + janitor): storage side door -> sprinklers -> firefig
 test("alarm: coughing through the smoke next to the tower guard ends in a chase", () => {
     const sim = make(["standard"])
     const g = guard(sim, "guard_tower"); g.x = 23; g.z = 16; g.facing = Math.PI; g.waitLeft = 100
-    const zb = sim.activeZombie(); zb.x = 23, zb.z = 13
+    door(sim, "door_tower").open = true
+    const zb = sim.activeZombie(); zb.x = 23; zb.z = 13
     sim.setInput({ x: 0, z: 1 }); const events = run(sim, 6)
     assert.ok(ev(events, "alert").length >= 1 || ev(events, "caught").length >= 1)
 })
