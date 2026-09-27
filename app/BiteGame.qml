@@ -189,6 +189,9 @@ FocusScope {
             case "switchPrev": sim.switchZombie(-1); refresh(); break
             case "command": sim.toggleCommand(); refresh(); break
             case "restart": sim.restart(); level.snapCamera(); refresh(); break
+            default:
+                if (a.indexOf("select") === 0) { var n = parseInt(a.substring(6)); if (n >= 1 && n <= sim.state.squad.length && sim.selectZombie(n - 1)) { audio.play("switch"); refresh() } }
+                break
             case "pause": screen = "paused"; audio.play("ui_select"); input.clear(); break
             }
             return

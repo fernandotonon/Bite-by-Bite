@@ -25,6 +25,8 @@ Item {
         command:    [Qt.Key_H],
         restart:    [Qt.Key_R],
         pause:      [Qt.Key_Escape, Qt.Key_P],
+        select1: [Qt.Key_1], select2: [Qt.Key_2], select3: [Qt.Key_3], select4: [Qt.Key_4], select5: [Qt.Key_5],
+        select6: [Qt.Key_6], select7: [Qt.Key_7], select8: [Qt.Key_8], select9: [Qt.Key_9],
         menuUp:     [Qt.Key_W, Qt.Key_Up],
         menuDown:   [Qt.Key_S, Qt.Key_Down],
         menuLeft:   [Qt.Key_A, Qt.Key_Left],

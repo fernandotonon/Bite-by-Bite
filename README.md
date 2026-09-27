@@ -24,7 +24,7 @@ cmake --preset desktop && cmake --build --preset desktop --target bite_by_bite
 | Interact (doors, radio, panel, hide) | E / Space | A (south) |
 | Bite / infect | F | X (west) |
 | Character ability | Q | Y (north) |
-| Switch zombie | Tab / Shift-Tab | RB / LB |
+| Switch zombie | Tab / Shift-Tab, or 1–9 | RB / LB |
 | Squad stay / follow | H | B (east) |
 | Restart from checkpoint | R | Select |
 | Pause | Esc / P | Start |

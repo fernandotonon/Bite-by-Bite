@@ -34,7 +34,7 @@ Item {
         id: squadRow
         x: 16; y: 14; spacing: 10
         Repeater {
-            model: hud.st ? hud.st.squad.length : 0
+            model: { hud.stateVersion; return hud.st ? hud.st.squad.length : 0 }
             delegate: Rectangle {
                 required property int index
                 readonly property var zb: { hud.stateVersion; return hud.st.squad[index] }
@@ -63,7 +63,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             width: pillText.implicitWidth + 28; height: hud.compact ? 40 : 46; radius: 10
             color: Qt.rgba(0, 0, 0, 0.45); border.color: Theme.border; border.width: 2
-            Text { id: pillText; anchors.centerIn: parent; text: (followPill.mode === "follow" ? "\u25B6 Following" : "\u25A0 Staying") + (hud.touch ? "" : "  [H]") + (hud.touch ? "" : "   Tab: switch"); color: Theme.text; font.pixelSize: 13; font.family: Theme.font }
+            Text { id: pillText; anchors.centerIn: parent; text: (followPill.mode === "follow" ? "\u25B6 Following" : "\u25A0 Staying") + (hud.touch ? "" : "  [H]") + (hud.touch ? "" : "   Tab / 1-9: switch"); color: Theme.text; font.pixelSize: 13; font.family: Theme.font }
             MouseArea { anchors.fill: parent; onClicked: parent.tapAction() }
         }
     }
@@ -92,7 +92,7 @@ Item {
 
     // ---- detection markers over guards / witnesses / cameras ----
     Repeater {
-        model: hud.st ? hud.st.humans.length : 0
+        model: { hud.stateVersion; return hud.st ? hud.st.humans.length : 0 }
         delegate: Item {
             required property int index
             // the sim mutates its objects in place: every binding below also reads stateVersion to refresh
@@ -111,7 +111,7 @@ Item {
         }
     }
     Repeater {
-        model: hud.st ? hud.st.cameras.length : 0
+        model: { hud.stateVersion; return hud.st ? hud.st.cameras.length : 0 }
         delegate: Item {
             required property int index
             readonly property var c: hud.st.cameras[index]
@@ -125,7 +125,7 @@ Item {
     }
     // bite progress over the biting zombie
     Repeater {
-        model: hud.st ? hud.st.squad.length : 0
+        model: { hud.stateVersion; return hud.st ? hud.st.squad.length : 0 }
         delegate: Item {
             required property int index
             readonly property var zb: { hud.stateVersion; return hud.st.squad[index] }

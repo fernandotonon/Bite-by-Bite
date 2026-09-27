@@ -84,7 +84,7 @@ var hospital = {
         { id: "curtain_a", asset: "curtain_screen", x: 4.6, z: 0.9, facing: 0, w: 1.8, d: 1.6, blocksSight: true },
         { id: "locker_a", asset: "locker", x: 0.4, z: 6.6, facing: 90, w: 0.6, d: 0.9, blocksSight: true, hide: true, label: "Locker" },
         // nurse station
-        { id: "bed_c", asset: "hospital_bed_modern", x: 17.5, z: 0.6, facing: 0, w: 1.1, d: 2.2, blocksSight: false },
+        { id: "bed_c", asset: "hospital_bed_modern", x: 15.6, z: 0.6, facing: 0, w: 1.1, d: 2.2, blocksSight: false },
         { id: "cart", asset: "medical_cart", x: 14.8, z: 5.2, facing: 0, w: 0.9, d: 0.9, blocksSight: true, movable: true, label: "Medical cart" },
         { id: "divider_c", asset: "curtain_divider", x: 12.6, z: 1.6, facing: 90, w: 0.4, d: 2.6, blocksSight: true },   // screens the B->C opening from the corridor
         // corridor E
@@ -103,7 +103,7 @@ var hospital = {
         { id: "vending", asset: "vending_machine", x: 26.6, z: 8.4, facing: 0, w: 1.0, d: 0.8, blocksSight: true },
         { id: "wheelchair", asset: "wheelchair", x: 8.6, z: 12.4, facing: 90, w: 0.9, d: 0.9, blocksSight: false, movable: true, label: "Wheelchair" },
         { id: "iv_a", asset: "iv_stand", x: 3.4, z: 1.3, facing: 0, w: 0.4, d: 0.4, blocksSight: false },
-        { id: "iv_c", asset: "iv_stand", x: 18.9, z: 3.2, facing: 0, w: 0.4, d: 0.4, blocksSight: false }
+        { id: "iv_c", asset: "iv_stand", x: 14.2, z: 0.6, facing: 0, w: 0.4, d: 0.4, blocksSight: false }
     ],
     pickups: [ { id: "radio", kind: "radio", x: 13.0, z: 6.6, label: "Radio" } ],
     collectibles: [ { id: "brain", asset: "brain_jar", x: 18.6, z: 18.8, label: "Brain in a jar" } ],

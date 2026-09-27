@@ -37,6 +37,7 @@ Item {
                 key(Qt.Key_E); game.tick(1 / 60)
                 console.log("autotest: door open?", game.sim.state.doors[0].open, "prompt", JSON.stringify(game.sim.prompt()))
                 key(Qt.Key_Tab); key(Qt.Key_H); key(Qt.Key_Q); key(Qt.Key_F); game.tick(1 / 60)
+                if (game.sim.state.phase === "playing") { key(Qt.Key_1); if (game.sim.state.active !== 0) console.log("AUTOTEST FAIL: number key select"); key(Qt.Key_2); if (game.sim.state.active !== 1) console.log("AUTOTEST FAIL: number key select 2") }
                 // the squad strip: tapping / clicking the first card takes control of that zombie
                 var was = game.sim.state.active
                 var hit = game.hudSquadTap(16 + 60, 14 + 20)
