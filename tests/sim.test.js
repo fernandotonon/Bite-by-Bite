@@ -1,44 +1,6 @@
-// Rule checks for the mission simulation, without Qt:  node tests/sim.test.js
-// A tiny bot walks the active zombie along the simulation's own navigation paths, so these tests also
-// prove the hospital level is connected the way the puzzle flow expects.
-import { loadQmlJs } from "./qmljs-load.mjs"
 import assert from "node:assert/strict"
-import { fileURLToPath } from "node:url"
-import { dirname, join } from "node:path"
-const here = dirname(fileURLToPath(import.meta.url))
-const cfg = (f) => loadQmlJs(join(here, "..", "app", "config", f))
-const Ch = cfg("characters.js"), Mi = cfg("missions.js"), Tu = cfg("tuning.js").tuning
-const { createSim } = loadQmlJs(join(here, "..", "app", "scripts", "Sim.js"))
-const DT = 1 / 60
-
-let passed = 0
-function test(name, fn) { try { fn(); passed++; console.log("ok   " + name) } catch (e) { console.log("FAIL " + name + "\n     " + (e.stack || e)); process.exitCode = 1 } }
-function make(squad, opts = {}) {
-    const sim = createSim({ mission: Mi.get("hospital_night_shift"), characters: Ch.byId, tuning: Tu, squad: squad || ["standard"], rng: () => 0.37 })
-    if (opts.blind) { for (const h of sim.state.humans) h.view = { angle: 0, range: 0 }; for (const c of sim.state.cameras) c.view = { angle: 0, range: 0 } }
-    return sim
-}
-function run(sim, seconds) { for (let t = 0; t < seconds; t += DT) sim.step(DT); return sim.takeEvents() }
-function ev(events, type) { return events.filter(e => e.type === type) }
-// walk the active zombie to (x, z) along the sim's own path; returns collected events
-function walkTo(sim, x, z, opts = {}) {
-    const S = sim.state, events = []
-    let t = 0
-    while (t < (opts.timeout || 40)) {
-        const zb = sim.activeZombie()
-        if (Math.hypot(zb.x - x, zb.z - z) < 0.22) break
-        if (S.phase !== "playing") break
-        const path = sim.findPath(zb.x, zb.z, x, z)
-        const p = path[0]
-        const dx = p.x - zb.x, dz = p.z - zb.z, len = Math.hypot(dx, dz) || 1
-        sim.setInput({ x: dx / len, z: dz / len, run: !!opts.run, sneak: !!opts.sneak })
-        sim.step(DT); t += DT
-        events.push(...sim.takeEvents())
-    }
-    sim.setInput({ x: 0, z: 0 }); sim.step(DT); events.push(...sim.takeEvents())
-    return events
-}
-function guard(sim, id) { return sim.state.humans.find(h => h.id === id) }
+import { Ch, Mi, Tu, DT, test, summary, make as makeMission, run, ev, walkTo, guard } from "./helpers.mjs"
+const make = (squad, opts) => makeMission("hospital_night_shift", squad, opts)
 
 test("start: one standard zombie in the patient room, door closed, interact opens it", () => {
     const sim = make()
@@ -282,4 +244,4 @@ test("cart: the active zombie pushes the medical cart, and it blocks sight after
     assert.ok(!sim.lineOfSight(zb.x, zb.z, zb.x, cart.z - 1), "cart blocks sight")
 })
 
-console.log(passed + " simulation checks passed")
+summary("hospital simulation")

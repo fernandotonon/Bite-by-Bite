@@ -21,6 +21,8 @@
 //   spawn        { x, z, facing } where the squad starts (members fan out around it)
 //   objectives   main + optional [{ id, kind, label, ... }] - kinds: escape, capture(target), noAlert,
 //                collectible(id), time(seconds)
+//   order / requiresMission / unlockText   campaign progression (data only; isUnlocked() below)
+//   location     asset id of the building shown on the mission screen; recruits: character ids previewed there
 .pragma library
 
 function rect(x, z, w, d, extra) { var r = { x: x, z: z, w: w, d: d }; if (extra) for (var k in extra) r[k] = extra[k]; return r }
@@ -33,8 +35,11 @@ function wall(x1, z1, x2, z2, extra) {
 
 var hospital = {
     id: "hospital_night_shift",
+    order: 1,
     title: "Night Shift at St. Rotter Hospital",
     subtitle: "Mission 1",
+    location: "hospital_building",           // asset shown on the mission-select stage
+    recruits: ["electrician", "nurse"],      // capturable characters previewed on the mission screen
     size: { w: 28, d: 20 },
     story: "You woke up in the research wing of St. Rotter Hospital with a taste for brains and no way out. " +
            "The ambulance bay is sealed by a laser barrier - the night-shift electrician knows how to shut it down.",
@@ -147,3 +152,7 @@ var missions = [hospital]
 var byId = {}
 for (var i = 0; i < missions.length; i++) byId[missions[i].id] = missions[i]
 function get(id) { return byId[id] || null }
+// campaign progression: a mission is playable once the one it requires has been completed
+//   completedIds: array of completed mission ids (from the save)
+function isUnlocked(m, completedIds) { return !m.requiresMission || (completedIds || []).indexOf(m.requiresMission) >= 0 }
+function lockReason(m) { return m.unlockText || (m.requiresMission ? "Complete " + (get(m.requiresMission) || { title: m.requiresMission }).title : "") }

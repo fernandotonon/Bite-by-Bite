@@ -44,6 +44,7 @@ Item {
     function isUnlocked(charId) { return progress.unlocked.indexOf(charId) >= 0 }
     function missionRecord(id) { return progress.missions[id] || null }
     function missionCompleted(id) { var r = missionRecord(id); return !!(r && r.completed) }
+    function completedMissions() { var out = []; for (var id in progress.missions) if (progress.missions[id].completed) out.push(id); return out }
     // merge a mission result; returns { newCharacters: [ids], newBest: bool }
     function recordResult(missionId, result) {
         var p = { unlocked: progress.unlocked.slice(), missions: Object.assign({}, progress.missions) }

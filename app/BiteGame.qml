@@ -223,7 +223,7 @@ FocusScope {
                   onPlay: game.screen = "missions"; onDeck: game.screen = "deck"; onQuit: game.quitRequested() }
     DeckScreen { id: deck; anchors.fill: parent; visible: game.screen === "deck"; game: game; onBack: { audio.play("ui_back"); game.screen = game.sim && game.lastResults ? "results" : "title" } }
     MissionScreen { id: missions; anchors.fill: parent; visible: game.screen === "missions"; game: game
-                    onChosen: function (id) { game.missionId = id; game.screen = "briefing" }
+                    onChosen: function (id) { if (Missions.isUnlocked(Missions.get(id), save.completedMissions())) { game.missionId = id; game.screen = "briefing" } else audio.play("locked") }
                     onBack: { audio.play("ui_back"); game.screen = "title" } }
     BriefingScreen { id: briefing; anchors.fill: parent; visible: game.screen === "briefing"; game: game; mission: game.mission
                      onProceed: { squadScreen.reset(); game.screen = "squad" }
