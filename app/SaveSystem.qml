@@ -7,7 +7,7 @@ import "config/characters.js" as Characters
 
 Item {
     id: save
-    property var settings: ({ volume: 0.8, muted: false, showTutorial: true, showCones: true })
+    property var settings: ({ volume: 0.8, muted: false, showTutorial: true, showCones: true, language: "" })
     property var progress: ({ unlocked: Characters.initialUnlocked(), missions: {} })
     readonly property string settingsKey: "settings.v1"
     readonly property string progressKey: "progress.v1"
@@ -65,5 +65,5 @@ Item {
         writeProgress(p)
         return out
     }
-    function clearAll() { ensureStore().remove(settingsKey); store.remove(progressKey); settings = { volume: 0.8, muted: false, showTutorial: true, showCones: true }; progress = { unlocked: Characters.initialUnlocked(), missions: {} } }
+    function clearAll() { ensureStore().remove(settingsKey); store.remove(progressKey); settings = { volume: 0.8, muted: false, showTutorial: true, showCones: true, language: "" }; progress = { unlocked: Characters.initialUnlocked(), missions: {} } }
 }

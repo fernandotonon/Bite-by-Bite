@@ -11,6 +11,8 @@ Item {
     readonly property var st: { stateVersion; return sim ? sim.state : null }
     property var prompt: null
     property string toast: ""
+    property string toastFmt: ""
+    property var toastArgs: []
     property real toastUntil: 0
     property string flash: ""            // "caught" | "checkpoint" | ""
     property real flashUntil: 0
@@ -20,6 +22,16 @@ Item {
     function pos(x, z, y) { var p = level ? level.screenPos(x, z, y) : Qt.point(0, 0); return Qt.point(p.x / uiScale, p.y / uiScale) }
 
     function fmtTime(s) { s = Math.max(0, Math.floor(s)); return Math.floor(s / 60) + ":" + (s % 60 < 10 ? "0" : "") + (s % 60) }
+    function trArgs(args) {
+        var out = [], list = args || []
+        for (var i = 0; i < list.length; i++) out.push(typeof list[i] === "number" ? list[i] : Lang.tr(String(list[i])))
+        return out
+    }
+    function trLine(obj) {
+        if (!obj) return ""
+        if (obj.fmt) return Lang.fmt(obj.fmt, hud.trArgs(obj.args))
+        return Lang.tr(obj.text || "")
+    }
 
     // ---- squad strip (tap a zombie to control it, the pill toggles stay / follow) ----
     function squadTap(x, y) {
@@ -50,8 +62,8 @@ Item {
                             Text { anchors.centerIn: parent; text: index + 1; color: "#fff"; font.bold: true; font.pixelSize: 15 } }
                 Column {
                     x: 48; anchors.verticalCenter: parent.verticalCenter; spacing: 1
-                    Text { text: ch ? ch.name : ""; color: Theme.text; font.pixelSize: hud.compact ? 13 : 15; font.bold: true; font.family: Theme.font }
-                    Text { text: active ? (ch ? ch.ability.label + " [" + hud.game.input.labels.ability + "]" : "") : status; color: active ? Theme.accent : Theme.muted; font.pixelSize: 12; font.family: Theme.font }
+                    Text { text: ch ? Lang.tr(ch.name) : ""; color: Theme.text; font.pixelSize: hud.compact ? 13 : 15; font.bold: true; font.family: Theme.font }
+                    Text { text: active ? (ch ? Lang.tr(ch.ability.label) + " [" + hud.game.input.labels.ability + "]" : "") : Lang.tr(status); color: active ? Theme.accent : Theme.muted; font.pixelSize: 12; font.family: Theme.font }
                 }
             }
         }
@@ -63,7 +75,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             width: pillText.implicitWidth + 28; height: hud.compact ? 40 : 46; radius: 10
             color: Qt.rgba(0, 0, 0, 0.45); border.color: Theme.border; border.width: 2
-            Text { id: pillText; anchors.centerIn: parent; text: (followPill.mode === "follow" ? "\u25B6 Following" : "\u25A0 Staying") + (hud.touch ? "" : "  [H]") + (hud.touch ? "" : "   Tab / 1-9: switch"); color: Theme.text; font.pixelSize: 13; font.family: Theme.font }
+            Text { id: pillText; anchors.centerIn: parent; text: (followPill.mode === "follow" ? "\u25B6 " + Lang.tr("Following") : "\u25A0 " + Lang.tr("Staying")) + (hud.touch ? "" : "  [H]") + (hud.touch ? "" : "   " + Lang.tr("Tab / 1-9: switch")); color: Theme.text; font.pixelSize: 13; font.family: Theme.font }
             MouseArea { anchors.fill: parent; onClicked: parent.tapAction() }
         }
     }
@@ -74,19 +86,19 @@ Item {
         id: objectives
         anchors.right: parent.right; anchors.rightMargin: 26; y: 24; spacing: 4
         Text { anchors.right: parent.right; text: hud.fmtTime(hud.st ? hud.st.elapsed : 0); color: Theme.text; font.pixelSize: 26; font.bold: true; font.family: Theme.font }
-        Text { anchors.right: parent.right; text: hud.game.mission ? hud.game.mission.objectives.main.label : ""; color: Theme.text; font.pixelSize: 14; font.family: Theme.font }
+        Text { anchors.right: parent.right; text: hud.game.mission ? Lang.tr(hud.game.mission.objectives.main.label) : ""; color: Theme.text; font.pixelSize: 14; font.family: Theme.font }
         Repeater {
             model: hud.game.mission ? hud.game.mission.objectives.optional : []
             delegate: Text {
                 required property var modelData
                 readonly property var st: hud.st ? hud.st.objectives[modelData.id] : null
                 anchors.right: parent.right
-                text: (st && st.done ? "✓ " : (st && st.failed ? "✗ " : "○ ")) + modelData.label
+                text: (st && st.done ? "✓ " : (st && st.failed ? "✗ " : "○ ")) + Lang.tr(modelData.label)
                 color: st && st.done ? Theme.accent : (st && st.failed ? Theme.danger : Theme.muted)
                 font.pixelSize: 12; font.family: Theme.font
             }
         }
-        Text { visible: hud.st && hud.st.alarm; anchors.right: parent.right; text: "⚠ ALARM"; color: Theme.danger; font.pixelSize: 16; font.bold: true; font.family: Theme.font
+        Text { visible: hud.st && hud.st.alarm; anchors.right: parent.right; text: Lang.tr("⚠ ALARM"); color: Theme.danger; font.pixelSize: 16; font.bold: true; font.family: Theme.font
                SequentialAnimation on opacity { loops: Animation.Infinite; running: hud.st && hud.st.alarm; NumberAnimation { to: 0.3; duration: 300 } NumberAnimation { to: 1; duration: 300 } } }
     }
 
@@ -148,14 +160,14 @@ Item {
             id: promptText; anchors.centerIn: parent; spacing: 10
             Rectangle { width: 28; height: 28; radius: 6; color: Theme.accent; anchors.verticalCenter: parent.verticalCenter
                         Text { anchors.centerIn: parent; text: hud.touch ? "\u261D" : (hud.prompt && hud.prompt.kind === "bite" ? hud.game.input.labels.bite : (hud.prompt && hud.prompt.needs ? hud.game.input.labels.ability : hud.game.input.labels.interact)); color: "#102"; font.bold: true; font.pixelSize: 15 } }
-            Text { text: hud.prompt ? hud.prompt.text : ""; color: Theme.text; font.pixelSize: 17; font.family: Theme.font; anchors.verticalCenter: parent.verticalCenter }
+            Text { text: hud.prompt ? hud.trLine(hud.prompt) : ""; color: Theme.text; font.pixelSize: 17; font.family: Theme.font; anchors.verticalCenter: parent.verticalCenter }
         }
     }
     // ---- bottom-left: controls reminder ----
     Text {
         x: 16; anchors.bottom: parent.bottom; anchors.bottomMargin: 12
         visible: !hud.touch
-        text: "WASD move · Shift run · Ctrl sneak · E interact · F bite · Q ability · R checkpoint · Esc pause"
+        text: Lang.tr("WASD move · Shift run · Ctrl sneak · E interact · F bite · Q ability · R checkpoint · Esc pause")
         color: Theme.muted; font.pixelSize: 12; font.family: Theme.font
     }
     // ---- message / tutorial toast ----
@@ -165,14 +177,14 @@ Item {
         width: Math.min(parent.width - 80, toastText.implicitWidth + 40); height: toastText.implicitHeight + 22; radius: 10
         color: Qt.rgba(0.1, 0.12, 0.16, 0.9); border.color: hud.st && hud.st.message ? Theme.accent2 : Theme.info; border.width: 2
         Text { id: toastText; anchors.centerIn: parent; width: parent.width - 30; wrapMode: Text.WordWrap; horizontalAlignment: Text.AlignHCenter
-               text: hud.st && hud.st.message ? hud.st.message.text : hud.toast; color: Theme.text; font.pixelSize: 15; font.family: Theme.font }
+               text: hud.st && hud.st.message ? hud.trLine(hud.st.message) : hud.trLine({ fmt: hud.toastFmt, args: hud.toastArgs, text: hud.toast }); color: Theme.text; font.pixelSize: 15; font.family: Theme.font }
     }
     // ---- flashes ----
     Rectangle {
         anchors.fill: parent
         visible: hud.flash !== "" && hud.st && hud.st.elapsed < hud.flashUntil
         color: hud.flash === "caught" ? Qt.rgba(0.8, 0.1, 0.1, 0.35) : Qt.rgba(0.3, 0.7, 1, 0.12)
-        Text { anchors.centerIn: parent; text: hud.flash === "caught" ? "CAUGHT!" : "CHECKPOINT"; color: "#fff"; font.pixelSize: hud.flash === "caught" ? 64 : 34; font.bold: true; font.family: Theme.font; style: Text.Outline; styleColor: "#000" }
-        Text { anchors.centerIn: parent; anchors.verticalCenterOffset: 50; visible: hud.flash === "caught"; text: "Back to the last checkpoint..."; color: "#fff"; font.pixelSize: 18; font.family: Theme.font }
+        Text { anchors.centerIn: parent; text: hud.flash === "caught" ? Lang.tr("CAUGHT!") : Lang.tr("CHECKPOINT"); color: "#fff"; font.pixelSize: hud.flash === "caught" ? 64 : 34; font.bold: true; font.family: Theme.font; style: Text.Outline; styleColor: "#000" }
+        Text { anchors.centerIn: parent; anchors.verticalCenterOffset: 50; visible: hud.flash === "caught"; text: Lang.tr("Back to the last checkpoint..."); color: "#fff"; font.pixelSize: 18; font.family: Theme.font }
     }
 }

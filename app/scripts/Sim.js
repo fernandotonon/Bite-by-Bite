@@ -27,6 +27,28 @@ function createSim(defs) {
     var LOCKS = T.locks || { maintenance: { ability: "unlock", label: "Master key" }, security: { ability: "securityAccess", label: "Security access" }, medical: { trait: "medicalAccess", label: "Medical access" } }
     function canUnlock(ch, lockType) { var l = LOCKS[lockType]; if (!l) return false; return (l.ability && ch.ability && ch.ability.id === l.ability) || (l.trait && ch.traits && ch.traits[l.trait]) }
     function lockLabel(lockType) { var l = LOCKS[lockType]; return l ? l.label : lockType }
+    // ability ids shown in "needs …" prompts, as the English words the player already knows
+    function needWord(id) {
+        var words = { crawl: "Crawl", vault: "Vault", terminal: "Terminal", rescue: "Rescue", securityAccess: "Security access",
+            sabotage: "Sabotage", smash: "Smash", bait: "Food bait", sedate: "Sedate", unlock: "Master key" }
+        return words[id] || id
+    }
+    // English source text stays in `.text` (the rule tests read it). `.fmt` + `.args` are the same
+    // sentence as a translation key, filled in by the HUD.
+    function line(fmt) {
+        var args = Array.prototype.slice.call(arguments, 1), i = 0
+        var text = String(fmt).replace(/%[sd]/g, function () { var a = args[i++]; return a === undefined || a === null ? "" : String(a) })
+        return { text: text, fmt: fmt, args: args }
+    }
+    function offer(extra, fmt) {
+        var row = line.apply(null, [fmt].concat(Array.prototype.slice.call(arguments, 2)))
+        extra.text = row.text; extra.fmt = row.fmt; extra.args = row.args
+        return extra
+    }
+    function setMessage(until, fmt) {
+        var row = line.apply(null, [fmt].concat(Array.prototype.slice.call(arguments, 2)))
+        S.message = { text: row.text, fmt: row.fmt, args: row.args, until: until }
+    }
     function emit(type, extra) { var e = { type: type, time: S ? S.time : 0 }; if (extra) for (var k in extra) e[k] = extra[k]; events.push(e) }
     function clone(o) { return JSON.parse(JSON.stringify(o)) }
     function rad(deg) { return deg * Math.PI / 180 }
@@ -255,7 +277,7 @@ function createSim(defs) {
             if (!p.movable) continue
             var wouldHit = circleHitsRect(zb.x + dx, zb.z + dz, T.zombieRadius, p)
             if (!wouldHit) continue
-            if ((p.heavy && !(ch.traits && ch.traits.heavyHands)) || (ch.traits && ch.traits.noPush)) { S.message = { text: "Too heavy for " + ch.name, until: S.time + 1.5 }; continue }
+            if ((p.heavy && !(ch.traits && ch.traits.heavyHands)) || (ch.traits && ch.traits.noPush)) { setMessage(S.time + 1.5, "Too heavy for %s", ch.name); continue }
             var pushSpeed = Math.min(speed, T.cartPushSpeed) * dt
             var px = Math.abs(mx) > Math.abs(mz) ? Math.sign(mx) * pushSpeed : 0, pz = Math.abs(mx) > Math.abs(mz) ? 0 : Math.sign(mz) * pushSpeed
             var moved = { x: p.x + px, z: p.z + pz, w: p.w, d: p.d }
@@ -335,41 +357,41 @@ function createSim(defs) {
         var ch = charOf(zb), R = T.interactRange, out = []
         var held = null
         for (var i = 0; i < S.pickups.length; i++) if (S.pickups[i].heldBy === zb.id) held = S.pickups[i]
-        if (held) out.push({ kind: "throw", text: "Throw " + held.label, target: held })
+        if (held) out.push(offer({ kind: "throw", target: held }, "Throw %s", held.label))
         var d = nearest(S.doors, zb.x, zb.z, R + 0.2, function (dd) { return !dd.sealed && !dd.tempUntil })
         if (d) {
-            if (d.locked) { var lk = LOCKS[d.lockType] || {}; out.push({ kind: "unlock", text: (canUnlock(ch, d.lockType) ? "Unlock " : "Locked: ") + d.label, target: d, needs: lk.ability || null }) }
-            else out.push({ kind: "door", text: (d.open ? "Close " : "Open ") + d.label, target: d })
+            if (d.locked) { var lk = LOCKS[d.lockType] || {}; out.push(offer({ kind: "unlock", target: d, needs: lk.ability || null }, canUnlock(ch, d.lockType) ? "Unlock %s" : "Locked: %s", d.label)) }
+            else out.push(offer({ kind: "door", target: d }, d.open ? "Close %s" : "Open %s", d.label))
         }
         var ctl = nearest(S.controls, zb.x, zb.z, R + 0.3, function (c) { return !c.used || c.timed })
         if (ctl) {
             var can = !ctl.requires || (ch.ability && ch.ability.id === ctl.requires) || (ch.traits && ch.traits[ctl.requires])
-            if (can) out.push({ kind: "control", text: (ctl.kind === "shutter" ? "Open " : "Use ") + ctl.label, target: ctl, needs: ctl.requires || null })
-            else if (ctl.fallback === "smash" && !(ch.traits && ch.traits.noSmash)) out.push({ kind: "controlSmash", text: "Smash " + ctl.label + " (alarm!)", target: ctl })
-            else out.push({ kind: "controlLocked", text: ctl.label + ": needs " + ctl.requires, target: ctl, needs: ctl.requires })
+            if (can) out.push(offer({ kind: "control", target: ctl, needs: ctl.requires || null }, ctl.kind === "shutter" ? "Open %s" : "Use %s", ctl.label))
+            else if (ctl.fallback === "smash" && !(ch.traits && ch.traits.noSmash)) out.push(offer({ kind: "controlSmash", target: ctl }, "Smash %s (alarm!)", ctl.label))
+            else out.push(offer({ kind: "controlLocked", target: ctl, needs: ctl.requires }, "%s: needs %s", ctl.label, needWord(ctl.requires)))
         }
         var tv = nearest(S.traversals.map(function (t) { return { x: t.from.x, z: t.from.z, t: t, end: "from" } }).concat(S.traversals.map(function (t) { return { x: t.to.x, z: t.to.z, t: t, end: "to" } })), zb.x, zb.z, R)
         if (tv) {
             var canT = (ch.ability && ch.ability.id === tv.t.requires) || (ch.traits && ch.traits[tv.t.requires])
-            out.push(canT ? { kind: "traverse", text: (tv.t.kind === "vault" ? "Vault over " : "Crawl through ") + tv.t.label, target: tv.t, end: tv.end, needs: tv.t.requires }
-                          : { kind: "traverseLocked", text: tv.t.label + ": needs " + tv.t.requires, target: tv.t, needs: tv.t.requires })
+            out.push(canT ? offer({ kind: "traverse", target: tv.t, end: tv.end, needs: tv.t.requires }, tv.t.kind === "vault" ? "Vault over %s" : "Crawl through %s", tv.t.label)
+                          : offer({ kind: "traverseLocked", target: tv.t, needs: tv.t.requires }, "%s: needs %s", tv.t.label, needWord(tv.t.requires)))
         }
-        if (ch.ability && ch.ability.id === "bait" && !held && S.time >= (zb.baitReadyAt || 0)) out.push({ kind: "bait", text: "Throw food bait", target: zb, needs: "bait", low: true })
-        if (ch.ability && ch.ability.id === "scream" && S.time >= (zb.screamReadyAt || 0)) out.push({ kind: "scream", text: "SCREAM", target: zb, needs: "scream", low: true })
+        if (ch.ability && ch.ability.id === "bait" && !held && S.time >= (zb.baitReadyAt || 0)) out.push(offer({ kind: "bait", target: zb, needs: "bait", low: true }, "Throw food bait"))
+        if (ch.ability && ch.ability.id === "scream" && S.time >= (zb.screamReadyAt || 0)) out.push(offer({ kind: "scream", target: zb, needs: "scream", low: true }, "SCREAM"))
         var pk = nearest(S.pickups, zb.x, zb.z, R, function (p) { return !p.heldBy && !p.flying })
-        if (pk && !held) out.push({ kind: "pickup", text: "Pick up " + pk.label, target: pk })
+        if (pk && !held) out.push(offer({ kind: "pickup", target: pk }, "Pick up %s", pk.label))
         var hp = nearest(S.props, zb.x, zb.z, R, function (p) { return p.hide && !p.occupant })
-        if (hp) out.push({ kind: "hide", text: "Hide in " + hp.label, target: hp })
+        if (hp) out.push(offer({ kind: "hide", target: hp }, "Hide in %s", hp.label))
         var pn = nearest(S.panels, zb.x, zb.z, R + 0.3, function (p) { return S.time >= p.usedUntil })
-        if (pn && ch.ability && ch.ability.id === "sabotage") out.push({ kind: "sabotage", text: "Sabotage " + pn.label, target: pn, needs: "sabotage" })
-        else if (pn && !(ch.traits && ch.traits.noSmash)) out.push({ kind: "smash", text: "Smash " + pn.label + " (alarm!)", target: pn })
+        if (pn && ch.ability && ch.ability.id === "sabotage") out.push(offer({ kind: "sabotage", target: pn, needs: "sabotage" }, "Sabotage %s", pn.label))
+        else if (pn && !(ch.traits && ch.traits.noSmash)) out.push(offer({ kind: "smash", target: pn }, "Smash %s (alarm!)", pn.label))
         var ww = nearest(S.walls, zb.x, zb.z, R + 0.2, function (w) { return w.weak && !w.broken })
-        if (ww) out.push({ kind: "break", text: (ch.traits && ch.traits.heavyHands ? "Break weak wall" : "Weak wall (needs Brute)"), target: ww, needs: "smash" })
+        if (ww) out.push(offer({ kind: "break", target: ww, needs: "smash" }, ch.traits && ch.traits.heavyHands ? "Break weak wall" : "Weak wall (needs Brute)"))
         var hu = nearest(S.humans, zb.x, zb.z, T.biteRange + 0.3, function (h) { return h.vulnerable && !h.bitten && h.kind !== "captive" })
-        if (hu) out.push({ kind: "bite", text: "Bite " + hu.label, target: hu })
+        if (hu) out.push(offer({ kind: "bite", target: hu }, "Bite %s", hu.label))
         if (ch.ability && ch.ability.id === "sedate" && S.time >= (zb.sedateReadyAt || 0)) {
             var sh = nearest(S.humans, zb.x, zb.z, T.biteRange + 0.5, function (h) { return !h.bitten && h.kind !== "captive" && !(h.sedatedUntil > S.time) })
-            if (sh) out.push({ kind: "sedate", text: "Sedate " + sh.label, target: sh, needs: "sedate" })
+            if (sh) out.push(offer({ kind: "sedate", target: sh, needs: "sedate" }, "Sedate %s", sh.label))
         }
         return out
     }
@@ -381,11 +403,11 @@ function createSim(defs) {
     }
     sim.prompt = function () {
         if (!S || S.phase !== "playing") return null
-        var zb = active(); if (zb.hidden) return { kind: "unhide", text: "Leave hiding" }
+        var zb = active(); if (zb.hidden) { var hidden = line("Leave hiding"); return { kind: "unhide", text: hidden.text, fmt: hidden.fmt, args: hidden.args } }
         if (zb.traversing) return null
         var c = candidates(zb); if (!c.length) return null
         var pick = pickCandidate(c)
-        return { kind: pick.kind, text: pick.text, needs: pick.needs || null, target: pick.target.id }
+        return { kind: pick.kind, text: pick.text, fmt: pick.fmt || pick.text, args: pick.args || [], needs: pick.needs || null, target: pick.target.id }
     }
     function perform(zb, c) {
         var ch = charOf(zb), t = c.target
@@ -393,12 +415,12 @@ function createSim(defs) {
         case "door": t.open = !t.open; navDirty = true; emit("door", { x: t.x, z: t.z, open: t.open }); addNoise(t.x, t.z, 1.5, "door"); return true
         case "unlock":
             if (canUnlock(ch, t.lockType)) { t.locked = false; t.open = true; navDirty = true; emit("unlock", { x: t.x, z: t.z }); return true }
-            S.message = { text: t.label + " is locked (needs " + lockLabel(t.lockType) + ")", until: S.time + 2 }; emit("locked", { x: t.x, z: t.z }); return false
+            setMessage(S.time + 2, "%s is locked (needs %s)", t.label, lockLabel(t.lockType)); emit("locked", { x: t.x, z: t.z }); return false
         case "control": useControl(t, zb, false); return true
         case "controlSmash": useControl(t, zb, true); return true
-        case "controlLocked": S.message = { text: t.label + " needs " + t.requires, until: S.time + 2 }; emit("locked", { x: t.x, z: t.z }); return false
+        case "controlLocked": setMessage(S.time + 2, "%s needs %s", t.label, needWord(t.requires)); emit("locked", { x: t.x, z: t.z }); return false
         case "traverse": startTraverse(zb, t, c.end); return true
-        case "traverseLocked": S.message = { text: t.label + " needs " + t.requires, until: S.time + 2 }; return false
+        case "traverseLocked": setMessage(S.time + 2, "%s needs %s", t.label, needWord(t.requires)); return false
         case "bait": throwBait(zb); return true
         case "scream": scream(zb); return true
         case "sedate":
@@ -419,7 +441,7 @@ function createSim(defs) {
             raiseAlarm(t.x, t.z, "panel"); emit("smash", { x: t.x, z: t.z, duration: T.smashDuration }); return true
         case "break":
             if (ch.traits && ch.traits.heavyHands) { t.broken = true; navDirty = true; addNoise(t.x + t.w / 2, t.z + t.d / 2, 8, "crash"); emit("wallBreak", { x: t.x + t.w / 2, z: t.z + t.d / 2 }); return true }
-            S.message = { text: "Only a Brute can break this wall", until: S.time + 2 }; return false
+            setMessage(S.time + 2, "Only a Brute can break this wall"); return false
         case "bite": startBite(zb, t); return true
         }
         return false
@@ -567,7 +589,7 @@ function createSim(defs) {
         var zb = active(); if (zb.bite || zb.hidden || S.time < zb.stunUntil) return false
         var c = candidates(zb)
         for (var i = 0; i < c.length; i++) if (c[i].kind === "bite") return perform(zb, c[i])
-        S.message = { text: "No one to bite here", until: S.time + 1.2 }
+        setMessage(S.time + 1.2, "No one to bite here")
         return false
     }
     sim.ability = function () {
@@ -577,7 +599,7 @@ function createSim(defs) {
         if (id === "bite") return sim.bite()
         var c = candidates(zb)
         for (var i = 0; i < c.length; i++) if (c[i].needs === id) return perform(zb, c[i])
-        S.message = { text: ch.ability.label + ": nothing to use it on here", until: S.time + 1.5 }
+        setMessage(S.time + 1.5, "%s: nothing to use it on here", ch.ability.label)
         emit("noTarget", { zombie: zb.id })
         return false
     }
@@ -832,7 +854,7 @@ function createSim(defs) {
         if (cp) takeCheckpoint(cp.id)
         var allIn = true, ex = null
         for (var i = 0; i < S.squad.length; i++) { var q = S.squad[i]; var zq = zoneAt(q.x, q.z, "exit"); if (!zq || q.hidden) allIn = false; else ex = zq }
-        if (allIn && ex && ex.requires) for (i = 0; i < ex.requires.length; i++) { var rc = controlById(ex.requires[i]); if (!rc || !rc.used) { allIn = false; if (S.time - (S.exitHintAt || -10) > 4) { S.exitHintAt = S.time; S.message = { text: "Not yet: " + (rc ? rc.label : ex.requires[i]) + " first", until: S.time + 2.5 } } } }
+        if (allIn && ex && ex.requires) for (i = 0; i < ex.requires.length; i++) { var rc = controlById(ex.requires[i]); if (!rc || !rc.used) { allIn = false; if (S.time - (S.exitHintAt || -10) > 4) { S.exitHintAt = S.time; setMessage(S.time + 2.5, "Not yet: %s first", rc ? rc.label : ex.requires[i]) } } }
         if (allIn) { S.exitHold += dt; if (S.exitHold >= T.exitHoldTime) win() } else S.exitHold = 0
     }
     function win() {

@@ -9,6 +9,7 @@ if(NODE_EXECUTABLE)
     add_test(NAME node_firehouse_rules COMMAND "${NODE_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/firehouse.test.js")
     add_test(NAME node_studio_rules COMMAND "${NODE_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/studio.test.js")
     add_test(NAME node_lab_rules COMMAND "${NODE_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/lab.test.js")
+    add_test(NAME node_lang COMMAND "${NODE_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/lang.test.js")
 endif()
 
 # Headless wiring check of the QML side: walks the menus, starts a mission, wins it, checks persistence.

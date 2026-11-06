@@ -86,7 +86,9 @@ QT_QPA_PLATFORM=minimal QT_QUICK_BACKEND=software build-desktop/bin/bite_by_bite
 ctest --preset desktop                                                                    # all of the above
 ```
 
-Flags: `--no-models` (toon placeholders only), `--autostart` (skip the menus), `--autotest` (headless wiring check).
+Flags: `--no-models` (toon placeholders only), `--autostart` (skip the menus), `--autotest` (headless wiring check),
+`--lang=pt_BR` (force a language; `pt-BR` and `pt` work too). The title and pause menus also cycle the language.
+See `docs/LOCALIZATION.md`.
 
 * `docs/architecture.md` - how the pieces fit (data → simulation → presentation) and how to add characters / missions.
 * `docs/asset-pipeline.md` - QtMeshEditor → balsam pipeline and the exact generation settings.

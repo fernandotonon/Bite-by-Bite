@@ -92,7 +92,7 @@ Item {
         width: tc.stickRadius * 2.2; height: width; radius: width / 2
         color: Qt.rgba(1, 1, 1, 0.12); border.color: Qt.rgba(1, 1, 1, 0.45); border.width: 2
         Text { anchors.centerIn: parent; text: "✥"; color: "white"; opacity: 0.7; font.pixelSize: 34 }
-        Text { anchors.horizontalCenter: parent.horizontalCenter; anchors.top: parent.bottom; anchors.topMargin: 6; text: "push to the edge to run"; color: Qt.rgba(1, 1, 1, 0.55); font.pixelSize: 12; font.family: Theme.font }
+        Text { anchors.horizontalCenter: parent.horizontalCenter; anchors.top: parent.bottom; anchors.topMargin: 6; text: Lang.tr("push to the edge to run"); color: Qt.rgba(1, 1, 1, 0.55); font.pixelSize: 12; font.family: Theme.font }
     }
     Item {        // live stick
         visible: tc.shown && tc.gameplay && tc.stickId >= 0
@@ -114,7 +114,7 @@ Item {
         Behavior on color { ColorAnimation { duration: 120 } }
         Text {
             anchors.centerIn: parent; width: parent.width - 18; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; maximumLineCount: 3; elide: Text.ElideRight
-            text: tc.prompt ? tc.prompt.text : "…"
+            text: tc.prompt ? Lang.fmt(tc.prompt.fmt || tc.prompt.text, (tc.prompt.args || []).map(function (a) { return typeof a === "number" ? a : Lang.tr(String(a)) })) : "…"
             color: actionBtn.available ? "white" : Qt.rgba(1, 1, 1, 0.45); font.pixelSize: tc.prompt && tc.prompt.text.length > 16 ? 15 : 18; font.bold: true; font.family: Theme.font
         }
     }
@@ -125,7 +125,7 @@ Item {
         width: 118; height: 56; radius: 28
         color: tc.sneak ? Qt.rgba(0.35, 0.65, 1, 0.85) : Qt.rgba(0, 0, 0, 0.45)
         border.color: tc.sneak ? "#dbe9ff" : Qt.rgba(1, 1, 1, 0.5); border.width: 2
-        Text { anchors.centerIn: parent; text: tc.sneak ? "SNEAKING" : "SNEAK"; color: "white"; font.pixelSize: 15; font.bold: true; font.family: Theme.font }
+        Text { anchors.centerIn: parent; text: tc.sneak ? Lang.tr("SNEAKING") : Lang.tr("SNEAK"); color: "white"; font.pixelSize: 15; font.bold: true; font.family: Theme.font }
     }
     Rectangle {   // pause, top centre-right (the objectives panel sits in the corner)
         id: pauseBtn
@@ -140,7 +140,7 @@ Item {
         anchors.right: parent.right; anchors.rightMargin: 40; anchors.bottom: parent.bottom; anchors.bottomMargin: 14
         width: 130; height: 48; radius: 10
         color: Qt.rgba(0, 0, 0, 0.45); border.color: Theme.accent; border.width: 2
-        Text { anchors.centerIn: parent; text: "‹ BACK"; color: Theme.text; font.pixelSize: 18; font.bold: true; font.family: Theme.font }
+        Text { anchors.centerIn: parent; text: Lang.tr("‹ BACK"); color: Theme.text; font.pixelSize: 18; font.bold: true; font.family: Theme.font }
         MouseArea { anchors.fill: parent; onClicked: if (tc.game) tc.game.handleAction("back") }
     }
     // ---- portrait phones: ask for landscape ---------------------------------------------------------
@@ -150,8 +150,8 @@ Item {
         Column {
             anchors.centerIn: parent; spacing: 14; width: parent.width - 80
             Text { anchors.horizontalCenter: parent.horizontalCenter; text: "↻"; color: Theme.accent; font.pixelSize: 90 }
-            Text { width: parent.width; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; text: "Turn your phone sideways"; color: Theme.text; font.pixelSize: 30; font.bold: true; font.family: Theme.font }
-            Text { width: parent.width; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; text: "Bite by Bite plays in landscape: stick on the left, the action button on the right."; color: Theme.muted; font.pixelSize: 18; font.family: Theme.font }
+            Text { width: parent.width; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; text: Lang.tr("Turn your phone sideways"); color: Theme.text; font.pixelSize: 30; font.bold: true; font.family: Theme.font }
+            Text { width: parent.width; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; text: Lang.tr("Bite by Bite plays in landscape: stick on the left, the action button on the right."); color: Theme.muted; font.pixelSize: 18; font.family: Theme.font }
         }
         MultiPointTouchArea { anchors.fill: parent }   // swallow touches while rotated
     }

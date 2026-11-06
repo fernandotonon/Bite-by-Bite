@@ -44,7 +44,7 @@ tests/               node rule tests (sim.test.js, data.test.js); the app itself
 ```
 progress = { unlocked: ["standard", "janitor", "brute", ...captured],
              missions: { <id>: { completed, bestTime, optionals: [ids], collectibles: [ids], rating, stars, plays } } }
-settings = { volume, muted, showTutorial, showCones }
+settings = { volume, muted, showTutorial, showCones, language }
 ```
 
 ## Adding a mission

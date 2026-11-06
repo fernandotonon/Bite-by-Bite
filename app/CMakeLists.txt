@@ -6,7 +6,8 @@ include(clayapp)
 file(GLOB_RECURSE BITE_RUNTIME_ASSETS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/runtime/*")
 file(GLOB BITE_AUDIO_ASSETS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/audio/*.wav")
 file(GLOB BITE_UI_ASSETS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/ui/*.png")
-set(BITE_RES_FILES ${BITE_AUDIO_ASSETS} ${BITE_UI_ASSETS})
+file(GLOB BITE_FONT_ASSETS CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/assets/fonts/*.ttf")
+set(BITE_RES_FILES ${BITE_AUDIO_ASSETS} ${BITE_UI_ASSETS} ${BITE_FONT_ASSETS})
 if(NOT EMSCRIPTEN)
     list(APPEND BITE_RES_FILES ${BITE_RUNTIME_ASSETS})
 endif()
@@ -17,7 +18,7 @@ foreach(_f IN LISTS BITE_RES_FILES)
 endforeach()
 
 file(GLOB BITE_QML_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.qml")
-file(GLOB BITE_JS_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.js" "${CMAKE_CURRENT_SOURCE_DIR}/config/*.js")
+file(GLOB BITE_JS_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.js" "${CMAKE_CURRENT_SOURCE_DIR}/config/*.js" "${CMAKE_CURRENT_SOURCE_DIR}/i18n/*.js")
 foreach(_q IN LISTS BITE_QML_FILES)
     get_filename_component(_n "${_q}" NAME)
     list(APPEND BITE_QML_NAMES "${_n}")
@@ -27,7 +28,7 @@ foreach(_j IN LISTS BITE_JS_FILES)
     list(APPEND BITE_QML_NAMES "${_rel}")
 endforeach()
 
-set_source_files_properties(Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+set_source_files_properties(Theme.qml Lang.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
 # physical gamepads: Apple's GameController framework on macOS, the browser Gamepad API on WebAssembly
 if(APPLE AND NOT IOS)
@@ -43,6 +44,7 @@ clay_app(bite_by_bite
         src/gamepadbridge.h ${BITE_GAMEPAD_SOURCE}
         src/savestore.h src/savestore.cpp
         src/webaudio.h src/webaudio.cpp
+        src/launcherenv.h src/launcherenv.cpp
 
     LINK_LIBS
         Qt::Core

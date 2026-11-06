@@ -35,8 +35,8 @@ Item {
     function reset() { picked = []; index = 0 }
 
     Rectangle { anchors.fill: parent; color: Theme.bg }
-    Text { x: 40; y: 26; text: "ASSEMBLE THE HORDE"; color: Theme.accent; font.pixelSize: 36; font.bold: true; font.family: Theme.font }
-    Text { x: 40; y: 72; text: "Pick up to " + screen.limit + " zombies for " + (mission ? mission.title : "") + ". The first pick starts in control."; color: Theme.muted; font.pixelSize: 15; font.family: Theme.font }
+    Text { x: 40; y: 26; text: Lang.tr("ASSEMBLE THE HORDE"); color: Theme.accent; font.pixelSize: 36; font.bold: true; font.family: Theme.font }
+    Text { x: 40; y: 72; text: Lang.fmt("Pick up to %d zombies for %s. The first pick starts in control.", [screen.limit, mission ? Lang.tr(mission.title) : ""]); color: Theme.muted; font.pixelSize: 15; font.family: Theme.font }
     Row {
         x: 40; y: 120; spacing: 14
         Repeater {
@@ -59,17 +59,17 @@ Item {
         readonly property var ch: screen.atStartRow ? null : screen.roster[screen.index]
         Column {
             x: 22; y: 16; width: parent.width - 260; spacing: 4
-            Text { text: info.ch ? info.ch.name + " · " + info.ch.occupation : "Start the mission"; color: Theme.text; font.pixelSize: 20; font.bold: true; font.family: Theme.font }
-            Text { text: info.ch ? "Ability: " + info.ch.ability.label + " - " + info.ch.ability.hint : (screen.picked.length ? "Squad: " + screen.picked.map(function (id) { return Characters.get(id).name }).join(", ") : "Pick at least one zombie."); color: Theme.accent; font.pixelSize: 14; font.family: Theme.font; width: parent.width; wrapMode: Text.WordWrap }
-            Text { text: info.ch ? "Passive: " + info.ch.passive.hint + "   Weakness: " + info.ch.weakness.hint : ""; color: Theme.muted; font.pixelSize: 13; font.family: Theme.font; width: parent.width; wrapMode: Text.WordWrap }
+            Text { text: info.ch ? Lang.tr(info.ch.name) + " · " + Lang.tr(info.ch.occupation) : Lang.tr("Start the mission"); color: Theme.text; font.pixelSize: 20; font.bold: true; font.family: Theme.font }
+            Text { text: info.ch ? Lang.fmt("Ability: %s - %s", [Lang.tr(info.ch.ability.label), Lang.tr(info.ch.ability.hint)]) : (screen.picked.length ? Lang.fmt("Squad: %s", [screen.picked.map(function (id) { return Lang.tr(Characters.get(id).name) }).join(", ")]) : Lang.tr("Pick at least one zombie.")); color: Theme.accent; font.pixelSize: 14; font.family: Theme.font; width: parent.width; wrapMode: Text.WordWrap }
+            Text { text: info.ch ? Lang.fmt("Passive: %s   Weakness: %s", [Lang.tr(info.ch.passive.hint), Lang.tr(info.ch.weakness.hint)]) : ""; color: Theme.muted; font.pixelSize: 13; font.family: Theme.font; width: parent.width; wrapMode: Text.WordWrap }
         }
     }
     Rectangle {
         x: 40; y: 470; width: 320; height: 52; radius: 10
         color: screen.atStartRow ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.25) : Theme.panel
         border.color: screen.atStartRow ? Theme.accent : Theme.border; border.width: 2
-        Text { anchors.centerIn: parent; text: (screen.atStartRow ? "▶ " : "") + "START MISSION (" + screen.picked.length + "/" + screen.limit + ")"; color: screen.picked.length ? Theme.text : Theme.muted; font.pixelSize: 18; font.bold: true; font.family: Theme.font }
+        Text { anchors.centerIn: parent; text: (screen.atStartRow ? "▶ " : "") + Lang.fmt("START MISSION (%d/%d)", [screen.picked.length, screen.limit]); color: screen.picked.length ? Theme.text : Theme.muted; font.pixelSize: 18; font.bold: true; font.family: Theme.font }
         MouseArea { anchors.fill: parent; onClicked: { screen.index = screen.roster.length; screen.navigate("accept") } }
     }
-    Text { x: 40; anchors.bottom: parent.bottom; anchors.bottomMargin: 18; text: "←→ browse · Enter pick / start · Esc back"; color: Theme.muted; font.pixelSize: 13; font.family: Theme.font }
+    Text { x: 40; anchors.bottom: parent.bottom; anchors.bottomMargin: 18; text: Lang.tr("←→ browse · Enter pick / start · Esc back"); color: Theme.muted; font.pixelSize: 13; font.family: Theme.font }
 }

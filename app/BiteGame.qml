@@ -46,8 +46,20 @@ FocusScope {
     Keys.onPressed: function (e) { input.keyPressed(e) }
     Keys.onReleased: function (e) { input.keyReleased(e) }
     onActiveFocusChanged: if (!activeFocus) input.clear()
+    property var launcherEnv: null
+    function launcherLanguage() {
+        if (!launcherEnv) {
+            try { launcherEnv = Qt.createQmlObject("import bite_by_bite; LauncherEnv {}", game, "LauncherEnv") }
+            catch (e) { launcherEnv = { language: "" } }
+        }
+        if (launcherEnv.language) return launcherEnv.language
+        for (var i = 0; i < appArgs.length; i++) if (String(appArgs[i]).indexOf("--lang=") === 0) return String(appArgs[i]).substring(7)
+        return ""
+    }
+    function syncLang() { Lang.apply(save.settings.language || "", launcherLanguage(), Qt.locale().name) }
+    function pickLanguage(code) { save.writeSettings({ language: code || "" }); syncLang() }
     Component.onCompleted: {
-        save.load(); forceActiveFocus(); attachGamepad(); input.touch = touch
+        save.load(); syncLang(); forceActiveFocus(); attachGamepad(); input.touch = touch
         Qt.callLater(function () { console.log("BiteByBite: save backend", save.backend, "unlocked", JSON.stringify(save.progress.unlocked), "models", !noModels) })
         var mArg = appArgs.filter(function (a) { return a.indexOf("--mission=") === 0 })[0]
         if (mArg) missionId = mArg.substring(10)
@@ -62,7 +74,7 @@ FocusScope {
         squad = squadIds.slice()
         sim = makeSim(squad)
         level.sim = sim; level.fx = []; level.snapCamera()
-        hud.sim = sim; hud.prompt = null; hud.toast = ""; hud.flash = ""
+        hud.sim = sim; hud.prompt = null; hud.toast = ""; hud.toastFmt = ""; hud.toastArgs = []; hud.flash = ""
         tutorialShown = {}
         lastResults = null; lastUnlocks = null
         simTime = 0
@@ -114,7 +126,7 @@ FocusScope {
         for (var i = 0; i < mission.tutorial.length; i++) if (mission.tutorial[i].id === id) t = mission.tutorial[i]
         if (!t) return
         tutorialShown[id] = true
-        hud.toast = t.text; hud.toastUntil = sim.state.elapsed + 6
+        hud.toastFmt = t.text; hud.toastArgs = []; hud.toast = t.text; hud.toastUntil = sim.state.elapsed + 6
     }
     function handleEvents() {
         var evs = sim.takeEvents()
@@ -130,15 +142,15 @@ FocusScope {
             case "noise": if (e.kind === "radio" || e.kind === "crash" || e.kind === "scream") level.addFx(e.x, e.z, "noise"); break
             case "biteStart": break
             case "bite": audio.play("bite"); level.addFx(e.x, e.z, "bite"); break
-            case "recruit": audio.play("recruit"); showTutorial("switch"); hud.toast = Characters.get(e.charId).name + " joined the squad! Tab switches, H tells the others to stay or follow."; hud.toastUntil = sim.state.elapsed + 6; break
+            case "recruit": audio.play("recruit"); showTutorial("switch"); hud.toastFmt = "%s joined the squad! Tab switches, H tells the others to stay or follow."; hud.toastArgs = [Characters.get(e.charId).name]; hud.toast = hud.toastFmt; hud.toastUntil = sim.state.elapsed + 6; break
             case "suspicious": audio.play("suspicious"); break
             case "alert": audio.play("alert"); break
             case "alarm": audio.play("alarm"); level.addFx(e.x, e.z, "alarm"); break
             case "scream": audio.play("scream"); break
             case "laserTrip": audio.play("laser"); break
             case "zap": audio.play("zap"); break
-            case "sabotage": audio.play("sabotage"); hud.toast = "Security down for " + Math.round(e.duration) + " s. A guard will come to check the panel."; hud.toastUntil = sim.state.elapsed + 4; break
-            case "smash": audio.play("smash"); hud.toast = "Panel smashed: " + Math.round(e.duration) + " s outage and every guard heard it!"; hud.toastUntil = sim.state.elapsed + 4; break
+            case "sabotage": audio.play("sabotage"); hud.toastFmt = "Security down for %d s. A guard will come to check the panel."; hud.toastArgs = [Math.round(e.duration)]; hud.toast = hud.toastFmt; hud.toastUntil = sim.state.elapsed + 4; break
+            case "smash": audio.play("smash"); hud.toastFmt = "Panel smashed: %d s outage and every guard heard it!"; hud.toastArgs = [Math.round(e.duration)]; hud.toast = hud.toastFmt; hud.toastUntil = sim.state.elapsed + 4; break
             case "wallBreak": audio.play("crash"); level.addFx(e.x, e.z, "noise"); break
             case "hide": case "unhide": audio.play("hide"); break
             case "checkpoint": audio.play("checkpoint"); hud.flash = "checkpoint"; hud.flashUntil = sim.state.elapsed + 1.2; showTutorial("guard"); break
@@ -146,20 +158,20 @@ FocusScope {
             case "caught": audio.play("caught"); hud.flash = "caught"; hud.flashUntil = sim.state.elapsed + Tuning.tuning.caughtRestartDelay; break
             case "restart": level.snapCamera(); level.fx = []; break
             case "switch": audio.play("switch"); break
-            case "command": audio.play("command"); hud.toast = e.mode === "stay" ? "Squad: stay here" : "Squad: follow me"; hud.toastUntil = sim.state.elapsed + 1.5; break
+            case "command": audio.play("command"); hud.toastFmt = e.mode === "stay" ? "Squad: stay here" : "Squad: follow me"; hud.toastArgs = []; hud.toast = hud.toastFmt; hud.toastUntil = sim.state.elapsed + 1.5; break
             case "noTarget": audio.play("locked"); break
-            case "control": audio.play("unlock"); hud.toast = (e.kind === "shutter" ? "Shutter opening" : "Control activated"); hud.toastUntil = sim.state.elapsed + 2; break
+            case "control": audio.play("unlock"); hud.toastFmt = (e.kind === "shutter" ? "Shutter opening" : "Control activated"); hud.toastArgs = []; hud.toast = hud.toastFmt; hud.toastUntil = sim.state.elapsed + 2; break
             case "bait": audio.play("throw"); break
             case "baitLand": audio.play("land"); level.addFx(e.x, e.z, "noise"); break
             case "traverseStart": audio.play("hide"); break
             case "traverseEnd": audio.play("hide"); level.snapCamera(); break
             case "cough": audio.play("step"); level.addFx(e.x, e.z, "noise"); break
             case "screamAbility": audio.play("scream"); level.addFx(e.toX, e.toZ, "alarm"); break
-            case "sedate": audio.play("hide"); level.addFx(e.x, e.z, "bite"); hud.toast = "Sedated - asleep for a while"; hud.toastUntil = sim.state.elapsed + 2; break
+            case "sedate": audio.play("hide"); level.addFx(e.x, e.z, "bite"); hud.toastFmt = "Sedated - asleep for a while"; hud.toastArgs = []; hud.toast = hud.toastFmt; hud.toastUntil = sim.state.elapsed + 2; break
             case "wake": audio.play("suspicious"); break
-            case "release": audio.play("recruit"); level.addFx(e.x, e.z, "bite"); hud.toast = Characters.get(e.charId).name + " is free and follows you!"; hud.toastUntil = sim.state.elapsed + 3; break
-            case "sonicAlarm": audio.play("alarm"); hud.toast = "Live microphones! The whole studio heard that."; hud.toastUntil = sim.state.elapsed + 3; break
-            case "hazardOff": audio.play("sabotage"); level.addFx(e.x, e.z, "noise"); hud.toast = e.kind === "fire" ? "Fire out" : "Smoke clearing"; hud.toastUntil = sim.state.elapsed + 2; break
+            case "release": audio.play("recruit"); level.addFx(e.x, e.z, "bite"); hud.toastFmt = "%s is free and follows you!"; hud.toastArgs = [Characters.get(e.charId).name]; hud.toast = hud.toastFmt; hud.toastUntil = sim.state.elapsed + 3; break
+            case "sonicAlarm": audio.play("alarm"); hud.toastFmt = "Live microphones! The whole studio heard that."; hud.toastArgs = []; hud.toast = hud.toastFmt; hud.toastUntil = sim.state.elapsed + 3; break
+            case "hazardOff": audio.play("sabotage"); level.addFx(e.x, e.z, "noise"); hud.toastFmt = e.kind === "fire" ? "Fire out" : "Smoke clearing"; hud.toastArgs = []; hud.toast = hud.toastFmt; hud.toastUntil = sim.state.elapsed + 2; break
             case "controlExpired": audio.play("locked"); break
             case "doorClosed": audio.play("door"); break
             }

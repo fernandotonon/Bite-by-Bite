@@ -32,7 +32,7 @@ Rectangle {
         Text { visible: !card.unlocked; anchors.centerIn: parent; text: "?"; color: "#666"; font.pixelSize: 44; font.bold: true }
         Rectangle { visible: card.picked; width: 26; height: 26; radius: 13; color: Theme.accent; x: 66; y: -6; Text { anchors.centerIn: parent; text: card.order; color: "#102"; font.bold: true; font.pixelSize: 15 } }
     }
-    Text { y: 120; width: parent.width - 12; anchors.horizontalCenter: parent.horizontalCenter; horizontalAlignment: Text.AlignHCenter; text: card.unlocked ? ch.name : (ch ? ch.occupation : "???"); color: card.unlocked ? Theme.text : Theme.muted; font.pixelSize: 15; font.bold: true; font.family: Theme.font; elide: Text.ElideRight }
+    Text { y: 120; width: parent.width - 12; anchors.horizontalCenter: parent.horizontalCenter; horizontalAlignment: Text.AlignHCenter; text: card.unlocked ? Lang.tr(ch.name) : (ch ? Lang.tr(ch.occupation) : Lang.tr("???")); color: card.unlocked ? Theme.text : Theme.muted; font.pixelSize: 15; font.bold: true; font.family: Theme.font; elide: Text.ElideRight }
     Text { y: 142; width: parent.width - 12; anchors.horizontalCenter: parent.horizontalCenter; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.WordWrap; maximumLineCount: 2
-           text: card.unlocked ? ch.ability.label : (card.capturable ? "Capture in a mission" : "Not yet in this outbreak"); color: card.unlocked ? Theme.accent : Theme.muted; font.pixelSize: 12; font.family: Theme.font }
+           text: card.unlocked ? Lang.tr(ch.ability.label) : (card.capturable ? Lang.tr("Capture in a mission") : Lang.tr("Not yet in this outbreak")); color: card.unlocked ? Theme.accent : Theme.muted; font.pixelSize: 12; font.family: Theme.font }
 }

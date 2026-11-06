@@ -42,11 +42,11 @@
     <div class="card">
       <h1>BITE</h1>
       <h2>by BITE</h2>
-      <h3>Capture humans. Build the perfect horde.</h3>
+      <h3 id="ld-tag">Capture humans. Build the perfect horde.</h3>
       <div class="bar"><div id="ld-fill"></div></div>
       <div id="ld-status">…</div>
       <div id="ld-tip"></div>
-      <div id="ld-error"><div id="ld-error-text"></div><button onclick="location.reload()">Retry</button></div>
+      <div id="ld-error"><div id="ld-error-text"></div><button id="ld-retry" onclick="location.reload()">Retry</button></div>
       <div id="ld-note">Keyboard: WASD move · E interact · F bite · Q ability · Tab switch — or touch: stick on the left, buttons on the right (landscape)</div>
       <div id="qtstatus"></div>
     </div>
@@ -56,21 +56,198 @@
   <script>
     // ---- loading screen ------------------------------------------------------------------------------
     const LOADING = { expected: __EXPECTED_BYTES__, build: "__BUILD_ID__" };
-    const T = {
-        down: (p, a, b) => `Downloading the outbreak… ${p}% (${a} of ${b} MB)`, prep: "Waking up the zombies…", start: "Almost there…",
-        fail: "The game could not be loaded. Check your connection and try again.",
-        tips: ["Guards see the coloured cone. Stay out of it or break line of sight - the meter must not fill.",
-               "Sneak (Ctrl) to fill detection meters slower; run (Shift) only when nobody is looking.",
-               "Pick up the radio with E and throw it with E again: guards go and look at the noise.",
-               "Sneak behind a human and press F to bite. Infected specialists join your squad on the spot.",
-               "Tab switches zombies, H tells the others to stay or follow.",
-               "The Electrician's Sabotage (Q) disables the laser cleanly - a guard comes to check the panel later.",
-               "Any zombie can smash the control panel: a short outage, a zap, and every guard hears it.",
-               "Lockers hide a zombie completely. Getting caught only sends you back to the last checkpoint.",
-               "Everything you infect stays in the Horde Deck for the next outbreak.",
-               "The second visit starts instantly: the files stay cached in your browser."]
+    // Runs before Qt, so this is separate from app/i18n. Same order as the game: launcher query, then the browser.
+    function matchLoading(raw) {
+        const ORDER = ["en", "pt_BR", "de", "ru", "fr", "pl", "tr", "es", "it"];
+        const r = String(raw || "").trim().replace(/-/g, "_").split(".")[0].split("@")[0];
+        if (!r) return "";
+        const low = r.toLowerCase();
+        for (const c of ORDER) if (c.toLowerCase() === low) return c;
+        const lang = low.split("_")[0];
+        for (const c of ORDER) if (c.toLowerCase().split("_")[0] === lang) return c;
+        return "";
+    }
+    const PACKS = {
+        en: {
+            tag: "Capture humans. Build the perfect horde.",
+            note: "Keyboard: WASD move · E interact · F bite · Q ability · Tab switch — or touch: stick on the left, buttons on the right (landscape)",
+            retry: "Retry", stopped: "The game stopped:", reload: "Reload",
+            prep: "Waking up the zombies…", start: "Almost there…",
+            fail: "The game could not be loaded. Check your connection and try again.",
+            isolate: "The browser did not allow isolation (SharedArrayBuffer). Try reloading, or another browser.",
+            down: (p, a, b) => `Downloading the outbreak… ${p}% (${a} of ${b} MB)`,
+            tips: ["Guards see the coloured cone. Stay out of it or break line of sight - the meter must not fill.",
+                   "Sneak (Ctrl) to fill detection meters slower; run (Shift) only when nobody is looking.",
+                   "Pick up the radio with E and throw it with E again: guards go and look at the noise.",
+                   "Sneak behind a human and press F to bite. Infected specialists join your squad on the spot.",
+                   "Tab switches zombies, H tells the others to stay or follow.",
+                   "The Electrician's Sabotage (Q) disables the laser cleanly - a guard comes to check the panel later.",
+                   "Any zombie can smash the control panel: a short outage, a zap, and every guard hears it.",
+                   "Lockers hide a zombie completely. Getting caught only sends you back to the last checkpoint.",
+                   "Everything you infect stays in the Horde Deck for the next outbreak.",
+                   "The second visit starts instantly: the files stay cached in your browser."]
+        },
+        pt_BR: {
+            tag: "Capture humanos. Monte a horda perfeita.",
+            note: "Teclado: WASD mover · E interagir · F morder · Q habilidade · Tab trocar — ou toque: alavanca à esquerda, botões à direita (horizontal)",
+            retry: "Tentar de novo", stopped: "O jogo parou:", reload: "Recarregar",
+            prep: "Acordando os zumbis…", start: "Quase lá…",
+            fail: "O jogo não pôde ser carregado. Verifique a conexão e tente de novo.",
+            isolate: "O navegador não permitiu o isolamento (SharedArrayBuffer). Tente recarregar ou usar outro navegador.",
+            down: (p, a, b) => `Baixando o surto… ${p}% (${a} de ${b} MB)`,
+            tips: ["Os guardas veem o cone colorido. Fique fora dele ou quebre a linha de visão - o medidor não pode encher.",
+                   "Esgueire (Ctrl) para encher a detecção mais devagar; corra (Shift) só quando ninguém estiver olhando.",
+                   "Pegue o rádio com E e jogue de novo com E: os guardas vão olhar o barulho.",
+                   "Esgueire atrás de um humano e aperte F para morder. Especialistas infectados entram no esquadrão na hora.",
+                   "Tab troca os zumbis, H manda os outros ficarem ou seguirem.",
+                   "A Sabotagem (Q) do Eletricista desliga o laser limpo - um guarda vem checar o painel depois.",
+                   "Qualquer zumbi pode quebrar o painel: um apagão curto, um choque, e todo guarda ouve.",
+                   "Armários escondem um zumbi por completo. Ser pego só te manda de volta ao último ponto de controle.",
+                   "Tudo o que você infecta fica no Baralho da Horda para o próximo surto.",
+                   "A segunda visita começa na hora: os arquivos ficam em cache no navegador."]
+        },
+        de: {
+            tag: "Fang Menschen. Bau die perfekte Horde.",
+            note: "Tastatur: WASD bewegen · E interagieren · F beißen · Q Fähigkeit · Tab wechseln — oder Touch: Stick links, Tasten rechts (Querformat)",
+            retry: "Nochmal", stopped: "Das Spiel ist stehen geblieben:", reload: "Neu laden",
+            prep: "Die Zombies wachen auf…", start: "Fast geschafft…",
+            fail: "Das Spiel konnte nicht geladen werden. Prüfe die Verbindung und versuch es noch einmal.",
+            isolate: "Der Browser hat die Isolation (SharedArrayBuffer) nicht erlaubt. Lade neu oder nimm einen anderen Browser.",
+            down: (p, a, b) => `Ausbruch wird geladen… ${p}% (${a} von ${b} MB)`,
+            tips: ["Wachen sehen den farbigen Kegel. Bleib draußen oder brich die Sichtlinie - die Anzeige darf nicht volllaufen.",
+                   "Schleiche (Ctrl), damit die Erkennung langsamer steigt; renn (Shift) nur, wenn niemand hinsieht.",
+                   "Nimm das Radio mit E und wirf es noch einmal mit E: Wachen schauen nach dem Lärm.",
+                   "Schleich dich hinter einen Menschen und drück F zum Beißen. Infizierte Spezialisten kommen sofort in den Trupp.",
+                   "Tab wechselt Zombies, H lässt die anderen warten oder folgen.",
+                   "Die Sabotage (Q) des Elektrikers schaltet den Laser sauber ab - eine Wache prüft das Paneel später.",
+                   "Jeder Zombie kann das Steuerpult zerschlagen: kurzer Ausfall, ein Schlag, und jede Wache hört es.",
+                   "Spinde verstecken einen Zombie ganz. Erwischt zu werden schickt dich nur zum letzten Kontrollpunkt zurück.",
+                   "Alles, was du infizierst, bleibt für den nächsten Ausbruch im Horden-Deck.",
+                   "Der zweite Besuch startet sofort: die Dateien bleiben im Browser gespeichert."]
+        },
+        ru: {
+            tag: "Захватывайте людей. Соберите идеальную орду.",
+            note: "Клавиатура: WASD движение · E взаимодействие · F укус · Q способность · Tab переключить — или касание: стик слева, кнопки справа (альбомная)",
+            retry: "Ещё раз", stopped: "Игра остановилась:", reload: "Перезагрузить",
+            prep: "Зомби просыпаются…", start: "Почти готово…",
+            fail: "Не удалось загрузить игру. Проверьте соединение и попробуйте снова.",
+            isolate: "Браузер не разрешил изоляцию (SharedArrayBuffer). Перезагрузите страницу или откройте другой браузер.",
+            down: (p, a, b) => `Загрузка вспышки… ${p}% (${a} из ${b} МБ)`,
+            tips: ["Охранники видят цветной конус. Не входите в него или прервите линию взгляда — шкала не должна заполниться.",
+                   "Крадитесь (Ctrl), чтобы обнаружение росло медленнее; бегите (Shift), только когда никто не смотрит.",
+                   "Подберите радио на E и бросьте снова на E: охрана пойдёт на шум.",
+                   "Подкрадитесь к человеку сзади и нажмите F, чтобы укусить. Заражённые специалисты сразу входят в отряд.",
+                   "Tab переключает зомби, H приказывает остальным ждать или идти следом.",
+                   "Саботаж (Q) электрика чисто отключает лазер — охранник позже проверит панель.",
+                   "Любой зомби может разбить панель: короткое отключение, удар током, и это слышит вся охрана.",
+                   "Шкафчики прячут зомби целиком. Если вас поймают, вы только вернётесь к последней контрольной точке.",
+                   "Все, кого вы заразили, остаются в колоде орды к следующей вспышке.",
+                   "Второй заход начинается сразу: файлы остаются в кэше браузера."]
+        },
+        fr: {
+            tag: "Capturez des humains. Assemblez la horde parfaite.",
+            note: "Clavier : WASD bouger · E interagir · F mordre · Q capacité · Tab changer — ou tactile : stick à gauche, boutons à droite (paysage)",
+            retry: "Réessayer", stopped: "Le jeu s'est arrêté :", reload: "Recharger",
+            prep: "Les zombies se réveillent…", start: "Presque prêt…",
+            fail: "Le jeu n'a pas pu être chargé. Vérifiez la connexion et réessayez.",
+            isolate: "Le navigateur n'a pas autorisé l'isolation (SharedArrayBuffer). Rechargez, ou essayez un autre navigateur.",
+            down: (p, a, b) => `Téléchargement de l'épidémie… ${p}% (${a} sur ${b} Mo)`,
+            tips: ["Les gardes voient le cône coloré. Restez-en dehors ou coupez la ligne de vue - la jauge ne doit pas se remplir.",
+                   "Faufilez-vous (Ctrl) pour remplir la détection plus lentement ; courez (Shift) seulement si personne ne regarde.",
+                   "Ramassez la radio avec E et relancez-la avec E : les gardes vont voir le bruit.",
+                   "Faufilez-vous derrière un humain et appuyez sur F pour mordre. Les spécialistes infectés rejoignent l'escouade sur place.",
+                   "Tab change de zombie, H dit aux autres de rester ou de suivre.",
+                   "Le Sabotage (Q) de l'électricien coupe le laser proprement - un garde viendra vérifier le panneau.",
+                   "N'importe quel zombie peut casser le panneau : courte coupure, un choc, et chaque garde l'entend.",
+                   "Les casiers cachent entièrement un zombie. Se faire prendre ne vous renvoie qu'au dernier point de contrôle.",
+                   "Tout ce que vous infectez reste dans le jeu de la horde pour la prochaine épidémie.",
+                   "La deuxième visite démarre tout de suite : les fichiers restent en cache dans le navigateur."]
+        },
+        pl: {
+            tag: "Łap ludzi. Złóż idealną hordę.",
+            note: "Klawiatura: WASD ruch · E interakcja · F ugryzienie · Q umiejętność · Tab zmiana — albo dotyk: drążek po lewej, przyciski po prawej (poziomo)",
+            retry: "Ponów", stopped: "Gra się zatrzymała:", reload: "Odśwież",
+            prep: "Zombie się budzą…", start: "Prawie gotowe…",
+            fail: "Nie udało się wczytać gry. Sprawdź połączenie i spróbuj ponownie.",
+            isolate: "Przeglądarka nie pozwoliła na izolację (SharedArrayBuffer). Odśwież stronę albo użyj innej przeglądarki.",
+            down: (p, a, b) => `Pobieranie epidemii… ${p}% (${a} z ${b} MB)`,
+            tips: ["Strażnicy widzą kolorowy stożek. Zostań poza nim albo przerwij linię wzroku - miernik nie może się zapełnić.",
+                   "Skradaj się (Ctrl), by wykrycie rosło wolniej; biegnij (Shift) tylko, gdy nikt nie patrzy.",
+                   "Podnieś radio klawiszem E i rzuć znowu E: strażnicy idą sprawdzić hałas.",
+                   "Zakradnij się za człowieka i naciśnij F, by ugryźć. Zarażeni specjaliści od razu dołączają do oddziału.",
+                   "Tab przełącza zombie, H każe reszcie zostać albo iść.",
+                   "Sabotaż (Q) elektryka czysto wyłącza laser - strażnik przyjdzie później sprawdzić panel.",
+                   "Każdy zombie może rozbić panel: krótka awaria, porażenie i każdy strażnik to słyszy.",
+                   "Szafki chowają zombie całkowicie. Złapanie cofa cię tylko do ostatniego punktu kontrolnego.",
+                   "Wszystko, co zarażasz, zostaje w talii hordy na następną epidemię.",
+                   "Druga wizyta startuje od razu: pliki zostają w pamięci przeglądarki."]
+        },
+        tr: {
+            tag: "İnsanları yakala. Mükemmel sürüyü kur.",
+            note: "Klavye: WASD hareket · E etkileşim · F ısır · Q yetenek · Tab değiştir — ya da dokunma: çubuk solda, düğmeler sağda (yatay)",
+            retry: "Yeniden dene", stopped: "Oyun durdu:", reload: "Yeniden yükle",
+            prep: "Zombiler uyanıyor…", start: "Neredeyse hazır…",
+            fail: "Oyun yüklenemedi. Bağlantını kontrol edip yeniden dene.",
+            isolate: "Tarayıcı yalıtıma (SharedArrayBuffer) izin vermedi. Yeniden yükle ya da başka bir tarayıcı dene.",
+            down: (p, a, b) => `Salgın indiriliyor… ${p}% (${a} / ${b} MB)`,
+            tips: ["Görevliler renkli koniyi görür. Dışında kal ya da görüş hattını kes - gösterge dolmamalı.",
+                   "Tespit daha yavaş dolsun diye sinsice ilerle (Ctrl); yalnız kimse bakmıyorken koş (Shift).",
+                   "Radyoyu E ile al ve yine E ile at: görevliler gürültüye bakar.",
+                   "Bir insanın arkasına sinsice yaklaşıp ısırmak için F bas. Enfekte uzmanlar hemen kadroya katılır.",
+                   "Tab zombileri değiştirir, H diğerlerine kal ya da takip et der.",
+                   "Elektrikçinin Sabotajı (Q) lazeri temiz keser - bir görevli paneli sonra kontrol eder.",
+                   "Her zombi kontrol panelini parçalayabilir: kısa kesinti, bir çarpma ve her görevli duyar.",
+                   "Dolaplar bir zombiyi tamamen gizler. Yakalanmak seni yalnız son kontrol noktasına geri yollar.",
+                   "Enfekte ettiğin her şey sonraki salgın için Horde Destesinde kalır.",
+                   "İkinci ziyaret anında başlar: dosyalar tarayıcıda önbellekte kalır."]
+        },
+        es: {
+            tag: "Captura humanos. Arma la horda perfecta.",
+            note: "Teclado: WASD mover · E interactuar · F morder · Q habilidad · Tab cambiar — o toque: palanca a la izquierda, botones a la derecha (horizontal)",
+            retry: "Reintentar", stopped: "El juego se detuvo:", reload: "Recargar",
+            prep: "Los zombis se despiertan…", start: "Casi listo…",
+            fail: "No se pudo cargar el juego. Comprueba la conexión e inténtalo de nuevo.",
+            isolate: "El navegador no permitió el aislamiento (SharedArrayBuffer). Recarga o prueba otro navegador.",
+            down: (p, a, b) => `Descargando el brote… ${p}% (${a} de ${b} MB)`,
+            tips: ["Los guardias ven el cono de color. Quédate fuera o rompe la línea de visión: el medidor no debe llenarse.",
+                   "Ve en sigilo (Ctrl) para que la detección suba más despacio; corre (Shift) solo cuando nadie mira.",
+                   "Coge la radio con E y lánzala otra vez con E: los guardias van a mirar el ruido.",
+                   "Acércate en sigilo por detrás de un humano y pulsa F para morder. Los especialistas infectados se unen al escuadrón al momento.",
+                   "Tab cambia de zombi, H ordena a los demás quedarse o seguir.",
+                   "El Sabotaje (Q) del Electricista apaga el láser limpio: un guardia vendrá a revisar el panel.",
+                   "Cualquier zombi puede destrozar el panel: un corte breve, una descarga, y lo oye cada guardia.",
+                   "Las taquillas esconden a un zombi por completo. Que te pillen solo te devuelve al último punto de control.",
+                   "Todo lo que infectas se queda en el Mazo de la horda para el siguiente brote.",
+                   "La segunda visita empieza al instante: los archivos quedan en la caché del navegador."]
+        },
+        it: {
+            tag: "Cattura umani. Costruisci l'orda perfetta.",
+            note: "Tastiera: WASD muovi · E interagisci · F mordi · Q abilità · Tab cambia — oppure tocco: stick a sinistra, pulsanti a destra (orizzontale)",
+            retry: "Riprova", stopped: "Il gioco si è fermato:", reload: "Ricarica",
+            prep: "Gli zombie si stanno svegliando…", start: "Ci siamo quasi…",
+            fail: "Il gioco non si è caricato. Controlla la connessione e riprova.",
+            isolate: "Il browser non ha permesso l'isolamento (SharedArrayBuffer). Ricarica, oppure prova un altro browser.",
+            down: (p, a, b) => `Download del focolaio… ${p}% (${a} di ${b} MB)`,
+            tips: ["Le guardie vedono il cono colorato. Restane fuori o spezza la linea di vista: l'indicatore non deve riempirsi.",
+                   "Vai di soppiatto (Ctrl) perché il rilevamento salga più lentamente; corri (Shift) solo se nessuno guarda.",
+                   "Raccogli la radio con E e lanciala di nuovo con E: le guardie vanno a vedere il rumore.",
+                   "Avvicinati di soppiatto alle spalle di un umano e premi F per mordere. Gli specialisti infetti entrano subito in squadra.",
+                   "Tab cambia zombie, H dice agli altri di restare o seguire.",
+                   "Il Sabotaggio (Q) dell'elettricista spegne il laser in modo pulito: una guardia verrà a controllare il pannello.",
+                   "Qualsiasi zombie può sfasciare il pannello: un breve blackout, una scossa, e ogni guardia lo sente.",
+                   "Gli armadietti nascondono uno zombie del tutto. Farsi prendere ti riporta solo all'ultimo checkpoint.",
+                   "Tutto ciò che infetti resta nel Mazzo dell'orda per il focolaio successivo.",
+                   "La seconda visita parte subito: i file restano nella cache del browser."]
+        }
     };
+    const loadParams = new URLSearchParams(location.search);
+    const loadCode = matchLoading(loadParams.get("qtmesh_lang") || loadParams.get("lang")) || matchLoading(navigator.language) || "en";
+    document.documentElement.lang = loadCode === "pt_BR" ? "pt-BR" : loadCode;
+    const T = PACKS[loadCode];
     const $ = (id) => document.getElementById(id);
+    $("ld-tag").textContent = T.tag;
+    $("ld-note").textContent = T.note;
+    $("ld-retry").textContent = T.retry;
     let tipIndex = Math.floor(Math.random() * T.tips.length);
     const showTip = () => { $("ld-tip").textContent = T.tips[tipIndex++ % T.tips.length]; };
     showTip(); const tipTimer = setInterval(showTip, 4500);
@@ -115,7 +292,7 @@
         if (!$("ld-status")) {          // the loading screen is gone (the app exited after it started): show a plain banner
             const b = document.createElement("div");
             b.style.cssText = "position:fixed;left:0;right:0;bottom:0;padding:14px;background:#1f2733;color:#eef2f5;font:15px Helvetica Neue,Arial;text-align:center;z-index:20";
-            b.innerHTML = "The game stopped: " + String(e && e.message || e).slice(0, 160).replace(/</g, "&lt;") + ' &nbsp; <a href="#" onclick="location.reload();return false" style="color:#7fe07a">Reload</a>';
+            b.innerHTML = T.stopped + " " + String(e && e.message || e).slice(0, 160).replace(/</g, "&lt;") + ' &nbsp; <a href="#" onclick="location.reload();return false" style="color:#7fe07a">' + T.reload + '</a>';
             document.body.appendChild(b); return;
         }
         $("ld-status").textContent = T.fail; $("ld-error").style.display = "block";
@@ -165,18 +342,25 @@
         // adds them and reloads the page once; do not start (and download) Qt until that has happened.
         if (!window.crossOriginIsolated) {
             $("ld-status").textContent = T.prep;
-            setTimeout(() => { if (!window.crossOriginIsolated) gameFailed(new Error("The browser did not allow isolation (SharedArrayBuffer). Try reloading, or another browser.")); }, 15000);
+            setTimeout(() => { if (!window.crossOriginIsolated) gameFailed(new Error(T.isolate)); }, 15000);
             return;
         }
         try {
             const writePack = await loadPack();
             await qtLoad({
-                arguments: (new URLSearchParams(location.search).get("args") || "").split(" ").filter(Boolean),
+                arguments: (() => {
+                    const params = new URLSearchParams(location.search);
+                    const args = (params.get("args") || "").split(" ").filter(Boolean);
+                    const qtmeshLang = params.get("qtmesh_lang");
+                    if (qtmeshLang && !args.some((a) => a.startsWith("--lang="))) args.push("--lang=" + qtmeshLang);
+                    return args;
+                })(),
                 noImageDecoding: true,                 // Qt decodes images itself; browser-side decoding of hundreds of PNGs stalls startup
                 noAudioDecoding: true,
                 preRun: [writePack],
                 locateFile: (path) => path + "?v=" + LOADING.build,      // wasm / worker js: same build as this page
                 qt: {
+                    environment: (new URLSearchParams(location.search).get("qtmesh_lang")) ? { QTMESH_LANG: new URLSearchParams(location.search).get("qtmesh_lang") } : {},
                     preload: ["bite-assets.json?v=" + LOADING.build],
                     onLoaded: () => { screen.style.display = "block"; gameLoaded(); setTimeout(qtKeyboardFocus, 0); },
                     onExit: (exitData) => { gameFailed(new Error("Application exit" + (exitData.code !== undefined ? ` with code ${exitData.code}` : "") + (exitData.text ? ` (${exitData.text})` : ""))); },
